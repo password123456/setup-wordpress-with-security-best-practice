@@ -11,6 +11,8 @@ It does not encompass all the content necessary for securing WordPress. However,
 
 ==== In Progress as of May 23, 2024. ====
 
+If you find this helpful, please the **"star"**:star2: to support further improvements.
+
 ## 1. Ensure that the Default WordPress Admin Username Has Been Changed
 
 When you install WordPress, the default admin username is "admin" unless you change it during the setup process. 
@@ -73,7 +75,7 @@ If user roles and permissions are not properly managed, users might gain unneces
 ## 3. Ensure User Registration is Disabled
 WordPress includes a built-in user registration feature. This feature is disabled by default, but it can be activated by an administrator.
 
-If this feature is enabled, anyone can register and potentially access the wp-admin dashboard, which can lead to security issues.
+If this feature is enabled, anyone can register and potentially access the WordPress Admin dashboard, which can lead to security issues.
 For most websites that are not intended to operate as open communities, the user registration feature is unnecessary and should remain disabled.
 
 **Audit:**
@@ -106,14 +108,14 @@ location: https://yourwordpress.com/wp-login.php?registration=disabled
 ![3.2!](/images/3.2.png)
 
 
-## 4. Ensure the Plugin File Editor is Disabled
+## 4. Ensure File Editor is Disabled
 If an attacker breaks into a WordPress Administrator account, they can take full control of your website. 
 They can edit the coding of your theme and plugins through the built-in "Editor" feature, upload malicious scripts, deface your site, spam your users, and more.
 
 Common hacks via these editors include SQL injections, SEO spam hacks, and Japanese SEO spam.
 
 **Audit:**
-- Verify that the file editor in the wp-admin dashboard is disabled. 
+- Verify that the file editor is disabled. 
 - Check if you can access the editor via Appearance > Editor or Plugins > Plugin Editor.
 
 **Remediation:**
