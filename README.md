@@ -1,4 +1,4 @@
-# setup-wordpress-with-security-best-practice
+# Setup WordPress With Security Best Practice
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fpassword123456%2Fsetup-wordpress-with-security-best-practice&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
 This document is written with the purpose of being suitable for web applications developed using WordPress, where there is no interaction with users. 
@@ -67,3 +67,74 @@ If user roles and permissions are not properly managed, users might gain unneces
 | 5  | Subscriber     | Can log in to the site and manage their personal profile, but cannot write or edit content.    | Internal Content Contributors                               |
 
 **Note:** For service-oriented websites such as company blogs, recruitment pages, brand sites, and promotional sites where users interact minimally and content is primarily showcased, roles such as "Administrators", "Editors", and "Authors" are typically sufficient.
+
+
+
+## 3. Ensure User Registration is Disabled
+WordPress includes a built-in user registration feature. This feature is disabled by default, but it can be activated by an administrator.
+
+If this feature is enabled, anyone can register and potentially access the wp-admin dashboard, which can lead to security issues.
+For most websites that are not intended to operate as open communities, the user registration feature is unnecessary and should remain disabled.
+
+**Audit:**
+- Verify that user registration is disabled. You can check this by attempting to access the user registration page.
+
+1. Using a web browser
+   - Go to https://yourwordpress.com/wp-login.php?action=register
+   - If user registration is disabled, you will see "User registration is currently not allowed."
+    ![3.1!](/images/3.1.png)
+
+2. Using curl
+   - If user registration is disabled, it will redirect to the disabled page.
+
+```
+# curl -i -k "https://yourwordpress.com/wp-login.php?action=register"
+
+(response)
+HTTP/1.1 302 Moved Temporarily
+cache-control: no-cache, no-store, must-revalidate, max-age=0
+content-type: text/html; charset=UTF-8
+server: Apache
+content-length: 0
+...
+location: https://yourwordpress.com/wp-login.php?registration=disabled
+```
+
+**Remediation:**
+- If user registration is enabled, disable it.
+- Uncheck “Anyone can register”
+![3.2!](/images/3.2.png)
+
+
+## 4. Ensure the Plugin File Editor is Disabled
+If an attacker breaks into a WordPress Administrator account, they can take full control of your website. 
+They can edit the coding of your theme and plugins through the built-in "Editor" feature, upload malicious scripts, deface your site, spam your users, and more.
+
+Common hacks via these editors include SQL injections, SEO spam hacks, and Japanese SEO spam.
+
+**Audit:**
+- Verify that the file editor in the wp-admin dashboard is disabled. 
+- Check if you can access the editor via Appearance > Editor or Plugins > Plugin Editor.
+
+**Remediation:**
+- If the file editor is enabled, disable it by following these steps:
+
+1. Access your wp-config.php file using File Manager or FTP
+2. Open the wp-config.php file for editing.
+3. Scroll down to the bottom of the file (if using the default wp-config.php).
+4. Locate the following line:
+`
+/* That’s all, stop editing! Happy publishing. */
+`
+5. Above this line, add the following code:
+`
+define('DISALLOW_FILE_EDIT', true);
+`
+6. Save the changes and close the editor.
+7. Return to your WordPress dashboard and confirm that the editor options are no longer available.
+
+**Note:** 
+If you do not have access to cPanel, you can download your wp-config.php file via FTP, edit it in a text editor to include the above line of code, and then upload it back to your website, overwriting the old file.
+
+Alternatively, use a security plugin like MalCare that includes a "Disable File Editor" feature to simplify this process.
+
