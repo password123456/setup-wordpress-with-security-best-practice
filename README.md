@@ -71,7 +71,6 @@ If user roles and permissions are not properly managed, users might gain unneces
 **Note:** For service-oriented websites such as company blogs, recruitment pages, brand sites, and promotional sites where users interact minimally and content is primarily showcased, roles such as "Administrators", "Editors", and "Authors" are typically sufficient.
 
 
-
 ## 3. Ensure User Registration is Disabled
 WordPress includes a built-in user registration feature. This feature is disabled by default, but it can be activated by an administrator.
 
@@ -140,3 +139,107 @@ If you do not have access to cPanel, you can download your wp-config.php file vi
 
 Alternatively, use a security plugin like MalCare that includes a "Disable File Editor" feature to simplify this process.
 
+
+## 5. Ensure Unused, Unnecessary Plugins are Disabled
+Many vulnerabilities in WordPress stem from plugin security issues. 
+Plugins are often open-source, making it easier for attackers to find and exploit vulnerabilities. 
+It is crucial to keep the plugins you use up-to-date and deactivate any unused plugins to prevent them from being exploited.
+
+**Audit:**
+- Check that unused plugins are disabled.
+- Use the Plugin Check (PCP) to examine the code quality and security status of your plugins. This helps identify any "suspicious" plugins.
+
+**Remediation:**
+- Disabled any unused, unnecessary plugins by following these steps:
+
+**Use Plugin Check - PCP:**
+- PCP: https://wordpress.org/plugins/plugin-check
+1. Install and Activate Plugin Check (PCP):
+   - Go to your WordPress admin dashboard(/wp-admin)
+   - Navigate to Plugins > Add New.
+   - Search for "Plugin Check" and install, activate it.
+
+2. Run a Plugin Check:
+   - In the WordPress dashboard, go to the Plugin Check menu.
+   - Select the plugins you want to check and run the scan.
+
+3. Analyze the Scan Results:
+   - PCP will analyze the plugin's code and provide a report, including:
+     - Code Standard Compliance: How well the plugin adheres to WordPress coding standards.
+     - Security Issues: Potential vulnerabilities or malicious code.
+     - Performance Issues: The impact on website performance.
+     - Compatibility Issues: Whether the plugin is compatible with other plugins and themes.
+
+4. Identify Problematic Plugins:
+   - If the report highlights significant security vulnerabilities, malicious code, or numerous coding standard violations, the plugin is likely "suspicious."
+   - Be cautious of plugins that make unnecessary external requests or run excessive database queries.
+
+5. Resolve Issues:
+   - Fix the identified problems by updating or find the issues on the plugin pages.
+   - Avoid using plugins with severe security issues. Find alternative plugins when necessary.
+
+**Plugin Management:**
+1. Plugin Selection:
+   - Use Official Repositories, Check Reviews and Ratings, Verify Developer Credibility
+   - Don't use unknown, not verified plugins
+
+2. Regular Updates
+   - Keep plugins up-to-date to ensure you have the latest security patches.
+
+3. Disabled and Delete Unused Plugins
+   - Even inactive plugins can pose a security risk, so remove them if they are not used.
+   - Minimize Plugins: Use only the essential plugins
+
+
+## 6. Ensure WordPress, Including WordPress admin(/wp-admin), is Configured to Use HTTPS Only
+Most modern websites are configured to operate over SSL (HTTPS).
+However, sometimes web servers are mistakenly set up to handle both HTTP and HTTPS connections.
+This can allow access to WordPress via both protocols, which is a security risk. WordPress, including wp-admin, should be forced to use HTTPS exclusively.
+
+**Audit:**
+- Verify that WordPress, including WordPress admin, is configured to be accessible only via HTTPS.
+- Check the web server's VirtualHost configuration to ensure there are no HTTP VirtualHosts set up.
+
+**Remediation:**
+- If HTTP access is possible, first review and modify the web server settings.
+- If the server has HTTP VirtualHosts, either redirect them to HTTPS or delete the HTTP VirtualHosts.
+- If necessary, enable the "FORCE_SSL_ADMIN" feature to enforce HTTPS access for wp-admin.
+
+**Steps to Enable FORCE_SSL_ADMIN:**
+1. Access your wp-config.php file using File Manager or FTP. 
+2. Open the wp-config.php file for editing. 
+3. Scroll down to the bottom of the file (if using the default wp-config.php). 
+4. Locate the following line:
+    ```
+    /* That’s all, stop editing! Happy publishing. */
+    ```
+5. Above this line, add the following code:
+    ```
+    define('FORCE_SSL_ADMIN', true);`
+    ```
+6. Save the changes and close the editor.
+Return to your WordPress dashboard and log in again to ensure wp-admin is accessible only via HTTPS.
+
+**Redirect HTTP to HTTPS on the Web Server:**
+1. For Apache:
+    ```
+    <VirtualHost *:80>
+        ServerName yourwordpress.com
+    
+        RewriteEngine On
+        RewriteCond %{HTTPS} off
+        RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    </VirtualHost>
+    ```
+2. For Nginx:
+    ```
+    server {
+        listen 80;
+        server_name yourwordpress.com;
+    
+        location / {
+            return 301 https://$host$request_uri;
+        }
+    }
+    ```
+By ensuring that WordPress and wp-admin are accessible only via HTTPS, you can significantly enhance the security of your website, protecting data and preventing unauthorized access.   
