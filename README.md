@@ -9,7 +9,7 @@ For websites where users register (sign up) and freely use the site, such as ope
 It does not encompass all the content necessary for securing WordPress. However, it is written to a level where it includes general but detailed information, allowing for security risk assessments and vulnerability responses based on the guide.
 ***
 
-==== In Progress as of May 27, 2024. ====
+==== In Progress as of May 28, 2024. ====
 
 If you find this helpful, please the **"star"**:star2: to support further improvements.
 
@@ -194,7 +194,7 @@ It is crucial to keep the plugins you use up-to-date and deactivate any unused p
 ## 6. Ensure WordPress, Including WordPress admin(/wp-admin), is Configured to Use HTTPS Only
 Most modern websites are configured to operate over SSL (HTTPS).
 However, sometimes web servers are mistakenly set up to handle both HTTP and HTTPS connections.
-This can allow access to WordPress via both protocols, which is a security risk. WordPress, including wp-admin, should be forced to use HTTPS exclusively.
+This can allow access to WordPress via both protocols, which is a security risk. WordPress, including WordPress Admin, should be forced to use HTTPS exclusively.
 
 **Audit:**
 - Verify that WordPress, including WordPress admin, is configured to be accessible only via HTTPS.
@@ -203,7 +203,7 @@ This can allow access to WordPress via both protocols, which is a security risk.
 **Remediation:**
 - If HTTP access is possible, first review and modify the web server settings.
 - If the server has HTTP VirtualHosts, either redirect them to HTTPS or delete the HTTP VirtualHosts.
-- If necessary, enable the "FORCE_SSL_ADMIN" feature to enforce HTTPS access for wp-admin.
+- If necessary, enable the "FORCE_SSL_ADMIN" feature to enforce HTTPS access for WordPress Admin.
 
 **Steps to Enable FORCE_SSL_ADMIN:**
 1. Access your wp-config.php file using File Manager or FTP. 
@@ -218,7 +218,7 @@ This can allow access to WordPress via both protocols, which is a security risk.
 define('FORCE_SSL_ADMIN', true);
 `
 6. Save the changes and close the editor.
-Return to your WordPress dashboard and log in again to ensure wp-admin is accessible only via HTTPS.
+Return to your WordPress dashboard and log in again to ensure WordPress Admin is accessible only via HTTPS.
 
 **Redirect HTTP to HTTPS on the Web Server:**
 1. For Apache:
@@ -242,4 +242,123 @@ Return to your WordPress dashboard and log in again to ensure wp-admin is access
         }
     }
     ```
-By ensuring that WordPress and wp-admin are accessible only via HTTPS, you can significantly enhance the security of your website, protecting data and preventing unauthorized access.   
+By ensuring that WordPress and WordPress Admin are accessible only via HTTPS, you can significantly enhance the security of your website, protecting data and preventing unauthorized access.   
+
+
+## 7. Ensure IP Access Restrictions (ACL) are Applied
+Verify that IP access restrictions are in place.
+
+To securely operate WordPress, it's essential to apply IP access restrictions to certain URLs, including WordPress Admin, to prevent unwanted users, computers, and bots from accessing them. This involves allowing access only from permitted IP addresses, such as administrator IPs. Additionally, disabling unused features is necessary to minimize attack surfaces.
+
+The URLs to secure include WordPress Admin user registration, JSON REST API, and the XML-RPC feature.
+
+This security guide targets service-oriented websites like company blogs, recruitment pages, brand sites, and promotional sites where user interaction is minimal and content is primarily showcased.
+
+By implementing IP access restrictions, you can significantly reduce the risk of unauthorized access and enhance the overall security of your website.
+
+
+### 7.1. Ensure that IP access restrictions are applied to the WordPress admin.
+WordPress admin access path is fixed in the form of wp-login.php or /wp-admin, making it easily accessible to unauthorized users.
+Ensure that ip access restriction is applied to prevent unauthorized access to the admin page.
+
+**Audit:**
+- Verify that IP access restrictions are in place for WordPress admin.
+- Typically, this is configured on the web server (Apache, Nginx).
+
+**Remediation:**
+- If IP access restrictions are not applied, implement them.
+- Following are methods to apply IP access restrictions using Apache and Nginx web servers.
+
+**Applying IP Access Restriction to WordPress Admin:**
+- /wp-admin, wp-login.php 
+
+1. For Apache:
+    ```
+   # Files Directive 
+    <Files "wp-login.php">
+        Require ip 123.456.789.000  # Replace with your IP address
+    </Files>
+    
+    # FilesMatch Directive
+    <FilesMatch "^wp-login\.php$">
+        Require all granted
+    </FilesMatch>
+
+   # Directory, Files Mixing Directive
+    <Directory /www/vhosts/yourwordpress>
+        Require all granted
+        AllowOverride None
+        <Files "wp-login.php">
+            Require ip 123.456.789.000  # Replace with your IP address
+        </Files>
+    </Directory>
+   
+   # Location Directive
+    <Location "/wp-admin">
+        Require ip 123.456.789.000  # Replace with your IP address
+    </Location>
+    
+    <Location "/wp-login.php">
+        Require ip 123.456.789.000  # Replace with your IP address
+    </Location>
+    ```
+2. For Nginx:
+    ```
+    location /wp-admin {
+        allow 123.456.789.000;  # Replace with your IP address
+        deny all;
+    }
+    
+    location ~* \wp-login.php {
+        allow 123.456.789.000;  # Replace with your IP address
+        deny all;
+    }
+    ```
+
+
+### 7.2. Restrict IP Access or Disable JSON REST API Feature
+WordPress provides two REST functionalities (xmlrpc, json rest api) and is enabled by default upon WordPress installation. 
+The REST API provides endpoints for WordPress data types, allowing remote interaction with the site for tasks such as querying posts or data, modifying resources, editing, and deleting.
+
+For most WordPress, the REST API feature is not essential. 
+Enabling it may expose WordPress to DDoS attacks and could result in resource consumption and site slowdowns.
+
+**Audit:**
+- Verify if the JSON REST API feature is enabled. (Default: Enabled)
+```
+# curl -i -k https://yourwordpress.com/wp-json
+
+(response)
+HTTP/1.1 200 OK
+cache-control: no-cache, no-store, must-revalidate, max-age=0
+content-type: text/html; charset=UTF-8
+...
+Server: Apache
+
+{"name":"mywordress","description":"".......................
+```
+
+**Remediation:**
+- If the REST API is unnecessary, deactivate it. Disabling it is possible through simple plugin installation.
+- If using the REST API, apply IP access restrictions to allow access only from permitted IPs.
+
+**Install "Disable REST API" Plugin, Activate:**
+1. Go to your WordPress admin dashboard(/wp-admin)
+2. Navigate to Plugins > Add New. 
+3. Search for "[Disable REST API](https://wordpress.org/plugins/disable-json-api/)" and install, activate it. 
+4. Once activated, the plugin should automatically disable the REST API functionality on your WordPress site.
+
+**IP Access Restriction for JSON REST API:**
+1. For Apache:
+    ```
+    <Location "/wp-json">
+        Require ip 123.456.789.000  # Replace with your IP address
+    </Location>
+    ```
+2. For Nginx:
+    ```
+   location ~ ^/wp-json/ {
+        allow 123.456.789.000;   # Replace with your allowed IP address
+        deny all;
+    }
+    ```
