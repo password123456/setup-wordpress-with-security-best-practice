@@ -9,7 +9,7 @@ For websites where users register (sign up) and freely use the site, such as ope
 It does not encompass all the content necessary for securing WordPress. However, it is written to a level where it includes general but detailed information, allowing for security risk assessments and vulnerability responses based on the guide.
 ***
 
-==== In Progress as of May 23, 2024. ====
+==== In Progress as of May 27, 2024. ====
 
 If you find this helpful, please the **"star"**:star2: to support further improvements.
 
@@ -210,13 +210,13 @@ This can allow access to WordPress via both protocols, which is a security risk.
 2. Open the wp-config.php file for editing. 
 3. Scroll down to the bottom of the file (if using the default wp-config.php). 
 4. Locate the following line:
-    ```
-    /* That’s all, stop editing! Happy publishing. */
-    ```
+`
+/* That’s all, stop editing! Happy publishing. */
+`
 5. Above this line, add the following code:
-    ```
-    define('FORCE_SSL_ADMIN', true);`
-    ```
+`
+define('FORCE_SSL_ADMIN', true);
+`
 6. Save the changes and close the editor.
 Return to your WordPress dashboard and log in again to ensure wp-admin is accessible only via HTTPS.
 
