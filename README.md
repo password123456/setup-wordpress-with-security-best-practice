@@ -362,3 +362,291 @@ Server: Apache
         deny all;
     }
     ```
+
+### 7.3. Disable XML-RPC API Feature
+Similar to the JSON REST API, it's advisable to disable the XML-RPC API since it's not required for most WordPress installations.
+
+If the REST API is needed, it's recommended to use the JSON REST API instead.
+
+XML-RPC has two main weaknesses:
+
+Brute force attacks:
+- Attackers try to login to WordPress using xmlrpc.php with as many username/password combinations as they can enter. 
+- A method within xmlrpc.php allows the attacker to use a single command (system.multicall) to guess hundreds of passwords. 
+
+Denial of Service Attacks via Pingback:
+- Back in 2013, attackers sent Pingback requests through xmlrpc.php of approximately 2500 WordPress sites. 
+- This gives any attacker a virtually limitless set of IP addresses to Distribute a Denial of Service attack across a network of over 100 million WordPress sites, without having to compromise them.
+
+If XML-RPC is enabled, it can still be exploited for such attacks.
+
+**Audit:**
+- Verify that XML-RPC API feature is enabled. (Default: Enabled)
+```
+# curl -i -k https://yourwordpress.com/xmlrpc.php
+
+(response)
+HTTP/1.1 405 Method Not Allowed
+Date: Mon, 25 Jun 2018 08:30:24 GMT
+Server: Apache
+Allow: POST
+Content-Length: 42
+Content-Type: text/plain; charset=UTF-8
+ 
+XML-RPC server accepts POST requests only.
+```
+
+**Remediation:**
+- Disable XML-RPC feature using plugin
+
+**Install "Disable XML-RPC-API" Plugin, Activate:**
+1. Go to your WordPress admin dashboard
+2. Navigate to Plugins > Add New. 
+3. Search for "[Disable XML-RPC-API](https://wordpress.org/plugins/disable-xml-rpc-api/)" and install, activate it. 
+4. XML-RPC-API is now disabled.
+
+**About XML-RPC pingbacks attacks:**
+
+1. Verify XML-RPC is enabled
+    ```
+    # curl -i -k https://yourwordpress.com/xmlrpc.php
+    
+    
+    HTTP/1.1 405 Method Not Allowed
+    Date: Mon, 25 Jun 2018 08:30:24 GMT
+    Server: Apache
+    Allow: POST
+    Content-Length: 42
+    Content-Type: text/plain; charset=UTF-8
+     
+     
+    XML-RPC server accepts POST requests only.
+    ```
+2. Searching for available XML-RPC methods
+    ```
+    (request)
+    POST /xmlrpc.php HTTP/1.1
+    Host: yourwordpress.com
+    Content-Length: 135
+    
+    <?xml version="1.0" encoding="utf-8"?>
+    <methodCall>
+        <methodName>system.listMethods</methodName>
+        <params></params>
+    </methodCall>
+    
+    
+    (response)
+    HTTP/1.1 200 OK
+    cache-control: no-cache, no-store, must-revalidate, max-age=0
+    ...
+    Server: Apache
+    Content-Length: 4272
+    Content-Type: text/xml; charset=UTF-8
+    
+    <?xml version="1.0" encoding="UTF-8"?>
+    <methodResponse>
+        <params>
+            <param>
+                <value>
+                    <array><data>
+                        <value><string>system.multicall</string></value>
+                        <value><string>system.listMethods</string></value>
+                        <value><string>system.getCapabilities</string></value>
+                        <value><string>demo.addTwoNumbers</string></value>
+                        <value><string>demo.sayHello</string></value>
+                        <value><string>pingback.extensions.getPingbacks</string></value>
+                        <value><string>pingback.ping</string></value>
+                        <value><string>mt.publishPost</string></value>
+                        ...
+                        <value><string>wp.getUsersBlogs</string></value>
+                    </data></array>
+                </value>
+            </param>
+        </params>
+    </methodResponse>
+    
+    ```
+3. Do pingbacks
+    - The success of a pingback attack and specific verification methods are not described. 
+    ```
+    (request)
+    POST /xmlrpc.php HTTP/1.1
+    Host: yourwordpress.com
+    Content-Length: 303
+    
+    <?xml version="1.0" encoding="UTF-8"?>
+        <methodCall>
+        <methodName>pingback.ping</methodName>
+            <params>
+                <param>
+                    <value><string>call-back url for pingback result</string></value>
+                </param>
+                <param>
+                    <value><string>https://yourwordpress.com/</string></value>
+            </param>
+        </params>
+    </methodCall>
+    
+    
+    (response)
+    HTTP/1.1 200 OK
+    ...
+    Server: Apache
+    Content-Length: 370
+    Content-Type: text/xml; charset=UTF-8
+    
+    <?xml version="1.0" encoding="UTF-8"?>
+    <methodResponse>
+      <fault>
+        <value>
+          <struct>
+            <member>
+              <name>faultCode</name>
+              <value><int>0</int></value>
+            </member>
+            <member>
+              <name>faultString</name>
+              <value><string></string></value>
+            </member>
+          </struct>
+        </value>
+      </fault>
+    </methodResponse>
+    ```
+
+
+### 7.4. Disable WP-Cron or Restrict Feature
+In WordPress, WP-Cron (wp-cron.php) is used to automate tasks such as scheduled post publishing, plugin/theme update checks, and notification email dispatching.
+
+WP-Cron essentially functions by checking the list of scheduled tasks every time a page is loaded.
+The issue arises when there is heavy page loading. 
+
+As WP-Cron tasks are performed with each page load, multiple repeated accesses result in corresponding WP-Cron invocations. Consequently, system resources may become scarce, causing the site to slow down or even halt.
+This is a real occurrence and is frequently exploited in vulnerability attacks targeting WordPress.
+
+If WP-Cron is not needed, it is advisable to deactivate it.
+If necessary, restrict it to local hosts only.
+
+
+**Audit:**
+- Verify that WP-Cron is enabled. (Default: Enabled)
+```
+# curl -i -k https://yourwordpress.com/wp-cron.php
+
+(response)
+HTTP/1.1 200 ok
+Date: Mon, 25 Jun 2018 08:30:24 GMT
+Server: Apache
+Allow: POST
+Content-Length: 42
+Content-Type: text/plain; charset=UTF-8
+```
+**Remediation:**
+- Disable WP-Cron if not used.
+- If used, apply one of the following options appropriately:
+  1. Activate "ALTERNATE_WP_CRON" and restrict IP access on wp-cron.php.
+  2. Use system cron(crontab) or other alternative methods for cron task execution.
+
+**Steps to Disable WP-Cron:**
+1. Access your wp-config.php file using File Manager or FTP. 
+2. Open the wp-config.php file for editing. 
+3. Scroll down to the bottom of the file (if using the default wp-config.php). 
+4. Locate the following line:
+`
+/* That’s all, stop editing! Happy publishing. */
+`
+5. Above this line, add the following code:
+`
+define('DISABLE_WP_CRON', true);
+`
+6. Save the changes and close the editor.
+7. Apply IP access restrictions using Apache and Nginx web servers.
+   1. For Apache:
+       ```
+      # Files Directive 
+       <Files "wp-cron.php">
+           Require ip 127.0.0.1  # localhost only
+       </Files>
+    
+       # FilesMatch Directive
+       <FilesMatch "^wp-cron\.php$">
+           Require ip 127.0.0.1  # localhost only
+       </FilesMatch>
+   
+      # Location Directive
+       <Location "/wp-cron.php">
+           Require ip 127.0.0.1  # localhost only
+       </Location>
+       ```
+   2. For Nginx:
+       ``` 
+        location = /wp-cron.php {
+            allow 127.0.0.1;
+            deny all;
+            access_log off;
+            log_not_found off;
+        }
+       ```
+      
+**Steps to Activate "ALTERNATE_WP_CRON":**
+1. Access your wp-config.php file using File Manager or FTP. 
+2. Open the wp-config.php file for editing. 
+3. Scroll down to the bottom of the file (if using the default wp-config.php). 
+4. Locate the following line:
+`
+/* That’s all, stop editing! Happy publishing. */
+`
+5. Above this line, add the following code:
+`
+define( 'ALTERNATE_WP_CRON', true );
+`
+6. Save the changes and close the editor.
+7. Apply IP access restrictions using Apache and Nginx web servers.
+   1. For Apache:
+       ```
+      # Files Directive 
+       <Files "wp-cron.php">
+           Require ip 127.0.0.1  # localhost only
+       </Files>
+    
+       # FilesMatch Directive
+       <FilesMatch "^wp-cron\.php$">
+           Require ip 127.0.0.1  # localhost only
+       </FilesMatch>
+   
+      # Location Directive
+       <Location "/wp-cron.php">
+           Require ip 127.0.0.1  # localhost only
+       </Location>
+       ```
+   2. For Nginx:
+       ``` 
+        location = /wp-cron.php {
+            allow 127.0.0.1;
+            deny all;
+            access_log off;
+            log_not_found off;
+        }
+       ```
+
+**Example for using system cron (crontab):**
+- Before applying, disable WP-Cron first.
+```
+# vim /etc/crontab
+..
+...
+*/10 * * * * curl http://yourwordpress.com/wp-cron.php?doing_wp_cron > /dev/null 2>&1
+
+*/10 * * * * cd /var/www/yourwordpress.com/htdocs; php /var/www/yourwordpress.com/htdocs/wp-cron.php?doing_wp_cron > /dev/null 2>&1
+
+# Also can use WP-Cli
+*/10 * * * * cd /var/www/example.com/htdocs; wp cron event run --due-now > /dev/null 2>&1
+```
+
+**About Performing DoS attack using wp-cron.php:**
+- Send an extensive volume of requests to the wp-cron.php
+- This results in the script consuming an excessive amount of resources, eventually overloading the server
+![7.4.1!](/images/7.4.1.png)
+![7.4.2!](/images/7.4.2.png)
+
