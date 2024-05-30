@@ -875,7 +875,7 @@ The **"fileinfo"** extension can be particularly dangerous if not properly secur
     ```
 
 Disabling the **"fileinfo"** extension or ensuring that it is used only with trusted input can mitigate these risks. If your WordPress site does not need fileinfo, you should consider disabling it in your PHP configuration:
-```
+```ini
 ; Disable the fileinfo extension
 ;extension=fileinfo.so
 ```
