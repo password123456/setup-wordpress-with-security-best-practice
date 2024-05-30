@@ -9,7 +9,7 @@ For websites where users register (sign up) and freely use the site, such as ope
 It does not encompass all the content necessary for securing WordPress. However, it is written to a level where it includes general but detailed information, allowing for security risk assessments and vulnerability responses based on the guide.
 ***
 
-==== In Progress as of May 28, 2024. ====
+==== In Progress as of May 30, 2024. ====
 
 If you find this helpful, please the **"star"**:star2: to support further improvements.
 
@@ -649,4 +649,239 @@ define( 'ALTERNATE_WP_CRON', true );
 - This results in the script consuming an excessive amount of resources, eventually overloading the server
 ![7.4.1!](/images/7.4.1.png)
 ![7.4.2!](/images/7.4.2.png)
+
+
+## 8. System Configuration for Secure WordPress.
+Ensuring secure operation of WordPress requires proper configuration of the web server and hardening of backend components. 
+Here are several essential items that must be checked and implemented.
+
+### 8.1. Ensure Use of Non-End-of-Life (EOL) WordPress and PHP Versions
+To maintain a secure WordPress installation, it is essential to use versions of WordPress and PHP that are not at their end-of-life (EOL). 
+EOL versions are no longer supported and do not receive security updates, leaving your website vulnerable to unpatched security issues.
+
+Using supported versions ensures that any discovered vulnerabilities are promptly addressed, protecting your site from potential attacks. 
+Here’s what you need to do to verify and update your WordPress and PHP versions:
+
+**Audit:**
+- Verify that your current WordPress and PHP versions are not EOL.
+
+**Remediation:**
+- Install and run non-EOL versions of WordPress and PHP. 
+- As of May 2024, the supported WordPress version is 6.5 and above. The supported PHP versions are 8.1, 8.2, and 8.3.
+- If you use a web hosting service, take advantage of their version-switching features to ensure you are running supported versions of both WordPress and PHP.
+
+**EOL Status as of May 2024:**
+ 1. PHP: [supported-versions](https://www.php.net/supported-versions.php)
+    - Currently Supported Versions: 8.1, 8.2, 8.3
+ 2. WordPress: [current-releases](https://wordpress.org/download/releases/)
+    - Currently Supported Versions: 6.5 series
+
+**e.g., PHP in RockyLinux 8.5:**
+- In RockyLinux 8.5, the default PHP versions available are 7.2, 7.3, and 7.4.
+    ```
+    # dnf module list php
+    Rocky Linux 8 - AppStream
+    Name         Stream          Profiles                           Summary                       
+    php          7.2 [d]         common [d], devel, minimal         PHP scripting language        
+    php          7.3             common [d], devel, minimal         PHP scripting language        
+    php          7.4             common [d], devel, minimal         PHP scripting language        
+    
+    Hint: [d]efault, [e]nabled, [x]disabled, [i]nstalled
+    
+    # dnf module enable php:7.4
+    ==============================================================================================
+     Package               Architecture         Version               Repository             Size
+    ==============================================================================================
+    Enabling module streams:
+     httpd                                      2.4                                              
+     php                                        7.4                                              
+    
+    Transaction Summary
+    ==============================================================================================
+    
+    Is this ok [y/N]: y
+    Complete!
+    ```
+- PHP 7 is end of life (EOL), you must use PHP 8.
+- PHP 8 can be installed from the REMI repository. 
+- Here is an example of how to enable and install PHP 8.2 using REMI:
+    ```
+    # Install PHP 8.2 in Rocky Linux 8
+    
+    # dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+    # dnf -y install https://rpms.remirepo.net/enterprise/remi-release-8.rpm
+    # dnf -y install yum-utils
+    # dnf module reset php
+    # dnf module install php:remi-8.2
+    Last metadata expiration check: 0:00:39 ago on Tue 13 Dec 2022 07:19:26 AM UTC.
+    Dependencies resolved.
+    =======================================================================================================================================
+     Package                       Architecture        Version                                             Repository                 Size
+    =======================================================================================================================================
+    Installing group/module packages:
+     php-cli                       x86_64              8.2.0-1.el8.remi                                    remi-modular              5.4 M
+     php-common                    x86_64              8.2.0-1.el8.remi                                    remi-modular              1.3 M
+     php-fpm                       x86_64              8.2.0-1.el8.remi                                    remi-modular              1.9 M
+     php-mbstring                  x86_64              8.2.0-1.el8.remi                                    remi-modular              574 k
+     php-xml                       x86_64              8.2.0-1.el8.remi                                    remi-modular              254 k
+    Installing dependencies:
+     httpd-filesystem              noarch              2.4.37-51.module+el8.7.0+1059+126e9251              appstream                  41 k
+     libxslt                       x86_64              1.1.32-6.el8                                        baseos                    249 k
+     oniguruma5php                 x86_64              6.9.8-1.el8.remi                                    remi-safe                 212 k
+    Installing weak dependencies:
+     nginx-filesystem              noarch              1:1.14.1-9.module+el8.4.0+542+81547229              appstream                  23 k
+    Installing module profiles:
+     php/common
+    Enabling module streams:
+     httpd                                             2.4
+     nginx                                             1.14
+     php                                               remi-8.2
+    
+    Transaction Summary
+    =======================================================================================================================================
+    Install  9 Packages
+    
+    # dnf update
+    # dnf install php
+    Last metadata expiration check: 0:00:23 ago on Tue 13 Dec 2022 07:29:55 AM UTC.
+    Dependencies resolved.
+    =======================================================================================================================================
+     Package                       Architecture       Version                                               Repository                Size
+    =======================================================================================================================================
+    Installing:
+     php                           x86_64             8.2.0-1.el8.remi                                      remi-modular             1.8 M
+    Installing dependencies:
+     apr                           x86_64             1.6.3-12.el8                                          appstream                128 k
+     apr-util                      x86_64             1.6.1-6.el8.1                                         appstream                104 k
+     httpd                         x86_64             2.4.37-51.module+el8.7.0+1059+126e9251                appstream                1.4 M
+     httpd-tools                   x86_64             2.4.37-51.module+el8.7.0+1059+126e9251                appstream                108 k
+     libsodium                     x86_64             1.0.18-2.el8                                          epel                     162 k
+     mailcap                       noarch             2.1.48-3.el8                                          baseos                    38 k
+     mod_http2                     x86_64             1.15.7-5.module+el8.6.0+823+f143cee1                  appstream                153 k
+     rocky-logos-httpd             noarch             86.3-1.el8                                            baseos                    24 k
+    Installing weak dependencies:
+     apr-util-bdb                  x86_64             1.6.1-6.el8.1                                         appstream                 23 k
+     apr-util-openssl              x86_64             1.6.1-6.el8.1                                         appstream                 26 k
+     php-opcache                   x86_64             8.2.0-1.el8.remi                                      remi-modular             633 k
+     php-pdo                       x86_64             8.2.0-1.el8.remi                                      remi-modular             166 k
+     php-sodium                    x86_64             8.2.0-1.el8.remi                                      remi-modular             105 k
+    
+    Transaction Summary
+    =======================================================================================================================================
+    Install  14 Packages
+    
+    Total download size: 4.8 M
+    Installed size: 14 M
+    Is this ok [y/N]: y
+    
+    # php -v
+    PHP 8.2.0 (cli) (built: Dec  6 2022 14:26:47) (NTS gcc x86_64)
+    Copyright (c) The PHP Group
+    Zend Engine v4.2.0, Copyright (c) Zend Technologies
+        with Zend OPcache v8.2.0, Copyright (c), by Zend Technologies
+    ```
+**Note::**
+- For detailed instructions on installing PHP from the REMI repository: [rpms.remirepo.net](https://rpms.remirepo.net/)
+- Documentation on WordPress and PHP compatibility: [php-compatibility-and-wordpress-versions](https://make.wordpress.org/core/handbook/references/php-compatibility-and-wordpress-versions/)
+
+
+### 8.2. Ensure Only Necessary PHP Extensions for WordPress Are Enabled
+Ensure that only the necessary PHP extensions for your WordPress site are enabled. 
+Unnecessary extensions can increase the attack surface of your website and may expose WordPress to security vulnerabilities. 
+
+By enabling only the required extensions, you can minimize potential risks and improve overall security.
+
+Below are required for a WordPress site to work properly. **(Not a list to fit security hardening purposes)**
+
+| Extension | Description                                                                                                                                                                                                                                        |
+|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| json      | Used for communications with other servers and processing data in JSON format.                                                                                                                                                                     |
+| mysqli    | Connects to MySQL for database interactions.                                                                                                                                                                                                       |
+| curl      | Performs remote request operations.                                                                                                                                                                                                                |
+| dom       | Used to validate Text Widget content and to automatically configure IIS7+.                                                                                                                                                                         |
+| exif      | Works with metadata stored in images.                                                                                                                                                                                                              |
+| fileinfo  | Used to detect mimetype of file uploads.                                                                                                                                                                                                           |
+| hash      | Used for hashing, including passwords and update packages.                                                                                                                                                                                         |
+| igbinary  | Increases performance as a drop-in replacement for the standard PHP serializer.                                                                                                                                                                    |
+| imagick   | Provides better image quality for media uploads. See WP_Image_Editor for details. Smarter image resizing (for smaller images) and PDF thumbnail support, when Ghost Script is also available.                                                      |
+| intl      | Enables locale-aware operations including but not limited to formatting, transliteration, encoding conversion, calendar operations, conformant collation, locating text boundaries, and working with locale identifiers, timezones, and graphemes. |
+| mbstring  | Used to properly handle UTF8 text.                                                                                                                                                                                                                 |
+| openssl   | SSL-based connections to other hosts.                                                                                                                                                                                                              |
+| pcre      | Increases performance of pattern matching in code searches.                                                                                                                                                                                        |
+| xml       | Used for XML parsing, such as from a third-party site.                                                                                                                                                                                             |
+| zip       | Used for decompressing Plugins, Themes, and WordPress update packages.                                                                                                                                                                             |
+| bc        | For arbitrary precision mathematics, which supports numbers of any size and precision up to 2147483647 decimal digits.                                                                                                                             | 
+| filter    | Used for securely filtering user input.                                                                                                                                                                                                            |
+| image     | If Imagick isn’t installed, the GD Graphics Library is used as a functionally limited fallback for image manipulation.                                                                                                                             |
+| iconv     | Used to convert between character sets.                                                                                                                                                                                                            |
+| shmop     | Shmop is an easy to use set of functions that allows PHP to read, write, create and delete Unix shared memory segments.                                                                                                                            |
+| simplexml | Used for XML parsing.                                                                                                                                                                                                                              |
+| sodium    | Validates Signatures and provides securely random bytes.                                                                                                                                                                                           |
+| xmlreader | Used for XML parsing.                                                                                                                                                                                                                              |
+| zlib      | Gzip compression and decompression.                                                                                                                                                                                                                |
+
+Essential extensions can be found here: [WordPress Hosting Handbook: PHP Extensions](https://make.wordpress.org/hosting/handbook/server-environment/#php-extensions)
+
+**Audit:**
+- Verify that only the necessary PHP extensions for your WordPress site are enabled.
+
+**Remediation:**
+- Remove any unnecessary extensions. Sometimes, extensions are installed along with plugins, which may not be required for your site.
+- To check the currently enabled PHP extensions, you can review the **php.ini** file or use the **phpinfo()** function to list all active extensions.
+
+![8.2!](/images/8.2.png)
+
+- Certain extensions, if not needed, should be disabled to prevent potential security issues. 
+- e.g., Extensions like exif, fileinfo, imap, soap, pdo_sqlite, and opcache could be exploited if left enabled without proper use.
+- If you are using a web hosting service, many providers offer easy-to-use interfaces to switch PHP settings, including enabling or disabling PHP extensions. Using these features, you can manage extensions effectively.
+
+**e.g., Exploitation using Fileinfo extension**
+
+The **"fileinfo"** extension can be particularly dangerous if not properly secured. The **"fileinfo"** extension provides a way to check information about a file, such as its MIME type. However, if left enabled without proper controls, it can be exploited in several ways:
+ 1. **Remote Code Execution**
+    - An attacker can exploit a vulnerability in the fileinfo extension to execute arbitrary code on the server. 
+    - This can happen if the extension is used to handle untrusted user input without proper validation.
+
+    **Example Attack:**
+    - Suppose there is a vulnerability in the fileinfo extension that allows an attacker to craft a special file that, when analyzed by fileinfo, causes the server to execute malicious code. 
+    - This could lead to a complete compromise of the server.
+    ```php
+    // Example code that uses fileinfo without proper validation
+    
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime = finfo_file($finfo, $_FILES['userfile']['tmp_name']);
+    finfo_close($finfo);
+    
+    if ($mime === 'application/x-php') {
+        include($_FILES['userfile']['tmp_name']); // Dangerous: allows execution of uploaded PHP files
+    }
+    ```
+
+ 2. **Denial of Service (DoS)**
+    - An attacker can create files that cause  **"fileinfo"** to consume excessive amounts of CPU or memory, potentially leading to a denial of service. 
+    - This can be particularly effective against systems that process large numbers of files or user uploads.
+
+    **Example Attack:**
+    - By uploading a specially crafted file that causes  **"fileinfo"** to enter an infinite loop or consume excessive resources, an attacker can cause the server to become unresponsive.
+    ```php
+    // Example code that processes user-uploaded files with fileinfo
+    
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    foreach ($_FILES['userfiles']['tmp_name'] as $file) {
+        $mime = finfo_file($finfo, $file);
+        // Process the file based on its MIME type
+    }
+    finfo_close($finfo);
+    ```
+
+Disabling the **"fileinfo"** extension or ensuring that it is used only with trusted input can mitigate these risks. If your WordPress site does not need fileinfo, you should consider disabling it in your PHP configuration:
+```
+; Disable the fileinfo extension
+;extension=fileinfo.so
+```
+
+The example above is meant to explain how the fileinfo PHP extension can be misused; 
+it does not imply that the fileinfo extension inherently has security issues. 
+
+By disabling unnecessary PHP extensions as described, you can protect your WordPress site from common exploits and enhance overall security.
 
