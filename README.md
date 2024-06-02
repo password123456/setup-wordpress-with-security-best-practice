@@ -23,9 +23,9 @@ It does not encompass all the content necessary for securing WordPress. However,
   * [7.4. Disable WP-Cron or Restrict Feature](#74-disable-wp-cron-or-restrict-feature)
 - [8. System Configuration for Secure WordPress.](#8-system-configuration-for-secure-wordpress)
   * [8.1. Ensure Use of Non-End-of-Life (EOL) WordPress and PHP Versions](#81-ensure-use-of-non-end-of-life-eol-wordpress-and-php-versions)
-  * [8.2. Ensure Only Necessary PHP Extensions for WordPress Are Enabled](#82-ensure-only-necessary-php-extensions-for-wordpress-are-enabled)
+  * [8.2. Ensure Only Necessary PHP Extensions for WordPress are Enabled](#82-ensure-only-necessary-php-extensions-for-wordpress-are-enabled)
   * [8.3. Ensure Security of Plugins with File Upload Features](#83-ensure-security-of-plugins-with-file-upload-features)
-  * [8.4. Ensure Insecure PHP Functions are Disabled](#84-ensure-php-functions-and-settings-are-properly-configured)
+  * [8.4. Ensure PHP Functions and Settrings are Properly Configured](#84-ensure-php-functions-and-settings-are-properly-configured)
 
 ==== In Progress as of May 31, 2024. will be done June, 7 ====
 ***
