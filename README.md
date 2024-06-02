@@ -25,7 +25,7 @@ It does not encompass all the content necessary for securing WordPress. However,
   * [8.1. Ensure Use of Non-End-of-Life (EOL) WordPress and PHP Versions](#81-ensure-use-of-non-end-of-life-eol-wordpress-and-php-versions)
   * [8.2. Ensure Only Necessary PHP Extensions for WordPress Are Enabled](#82-ensure-only-necessary-php-extensions-for-wordpress-are-enabled)
   * [8.3. Ensure Security of Plugins with File Upload Features](#83-ensure-security-of-plugins-with-file-upload-features)
-  * [8.4. Ensure Insecure PHP Functions are Disabled](#84-ensure-insecure-php-functions-are-disabled)
+  * [8.4. Ensure Insecure PHP Functions are Disabled](#84-ensure-php-functions-and-settings-are-properly-configured)
 
 ==== In Progress as of May 31, 2024. will be done June, 7 ====
 ***
@@ -1051,8 +1051,8 @@ if (isset($_GET['cmd'])) {
 - The above plugin codes are for educational purposes only.
 
 
-### 8.4. Ensure Insecure PHP Functions are Disabled
-Ensuring that certain PHP functions and settings are properly configured can significantly enhance the security of your WordPress site. 
+### 8.4. Ensure PHP functions and settings are properly configured
+Ensuring that PHP functions and settings are properly configured can significantly enhance the security of your WordPress site. 
 Misconfigured settings can expose your site to various vulnerabilities, including remote code execution, information disclosure, and session hijacking. 
 It is crucial to harden PHP by disabling or properly configuring these functions.
 
