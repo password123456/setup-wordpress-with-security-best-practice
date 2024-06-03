@@ -1659,6 +1659,6 @@ In most cases, web services are accessed via a domain name, such as `https://you
      Hello, yourwordpress.com
     ```
 
-  - If there is a need for inter-server communication or communication within the same IP subnet, you can configure the Default VirtualHost to allow access from specific IP addresses.
+   - If there is a need for inter-server communication or communication within the same IP subnet, you can configure the Default VirtualHost to allow access from specific IP addresses.
 
 By implementing these configurations, the web server responds only to requests directed at your domain.
