@@ -26,8 +26,14 @@ It does not encompass all the content necessary for securing WordPress. However,
   * [8.2. Ensure Only Necessary PHP Extensions for WordPress are Enabled](#82-ensure-only-necessary-php-extensions-for-wordpress-are-enabled)
   * [8.3. Ensure Security of Plugins with File Upload Features](#83-ensure-security-of-plugins-with-file-upload-features)
   * [8.4. Ensure PHP Functions and Settings are Properly Configured](#84-ensure-php-functions-and-settings-are-properly-configured)
+  * [8.5. Ensure the Web Server Runs As a Non-Root User - Unique, Unprivileged User and Group for the Server Application](#85-ensure-the-web-server-runs-as-a-non-root-user---unique-unprivileged-user-and-group-for-the-server-application)
+  * [8.6. Ensure PHP-FPM Runs As a Non-Root User - Unique, Unprivileged User and Group for the Server Application](#86-ensure-php-fpm-runs-as-a-non-root-user---unique-unprivileged-user-and-group-for-the-server-application)
+  * [8.7. Ensure Secure Configuration of the WordPress Home Directory](#87-ensure-secure-configuration-of-the-wordpress-home-directory)
 
-==== In Progress as of May 31, 2024. will be done June, 7 ====
+...
+
+==== In Progress as of June 03, 2024. will be done June, 7 ====
+
 ***
 
 ## 1. Ensure that the Default WordPress Admin Username has been Changed
@@ -1183,3 +1189,241 @@ system, exec, shell_exec, passthru, mysql_list_dbs, ini_alter, dl, symlink,
 link, chgrp, leak, popen, apache_child_terminate, virtual, mb_send_mail
 ```
 
+
+### 8.5. Ensure the Web Server Runs As a Non-Root User - Unique, Unprivileged User and Group for the Server Application
+In most cases, Web servers run as users such as "www-data" (Debian/Ubuntu) or "apache" (RHEL/CentOS).
+
+These users are dedicated service accounts with no special privileges on the server and are used to designate the user and group that the web server worker processes will assume.
+
+If these users have system privileges or are running as root, they must be changed.
+
+**Audit:**
+- Verify the user running the web server process. (Specifically, it is the web server worker process.)
+
+1. For Apache:
+    ```
+    # ps -ef | grep httpd
+    root     2257     1  0 Apr08 ?        00:00:01 /usr/local/apache/bin/httpd -k start
+    apache   5678  1234  0 Apr08 ?        00:00:00 /usr/sbin/httpd -k start
+    apache   5679  1234  0 Apr08 ?        00:00:00 /usr/sbin/httpd -k start
+    apache   5680  1234  0 Apr08 ?        00:00:00 /usr/sbin/httpd -k start
+    apache   5681  1234  0 Apr08 ?        00:00:00 /usr/sbin/httpd -k start
+    ```
+
+2. For Nginx:
+    ```
+    # ps -ef | grep nginx
+    root      626653       1  0 Apr08 ?        00:00:00 nginx: master process /usr/sbin/nginx
+    nginx     626654  626653  0 Apr08 ?        00:00:00 nginx: worker process
+    nginx     626655  626653  0 Apr08 ?        00:00:00 nginx: worker process
+    nginx     626656  626653  0 Apr08 ?        00:00:00 nginx: worker process
+    nginx     626657  626653  0 Apr08 ?        00:00:00 nginx: worker process
+    ```
+
+**Remediation:**
+- Web Server should run as a non-privileged, dedicated account.
+- In most cases, one of these commonly used accounts such as "www-data", "apache", "nginx", "nobody", or "daemon" is utilized.
+
+1. For Apache:
+    ```
+    # vim /etc/httpd/httpd.conf
+    ..
+    ...
+    User www-data
+    Group www-data
+    ..
+    ...
+    ```
+
+2. For Nginx:
+    ```
+    # vim /etc/nginx/nginx.conf
+    ..
+    ...
+    user daemon;
+    ```
+
+**Note:**
+- The process users for the web server should not have shell login privileges.
+  ```
+  # cat /etc/passwd | grep -i www-data
+  www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+  ```
+
+
+### 8.6. Ensure PHP-FPM Runs As a Non-Root User - Unique, Unprivileged User and Group for the Server Application
+WordPress is built with PHP, so a correct system configuration is necessary to execute PHP code properly.
+
+PHP code execution in WordPress is managed by PHP-FPM, a FastCGI Process Manager.
+To ensure the secure operation of PHP-FPM, it should run under a non-privileged, dedicated service account.
+
+Generally, the web server process account and PHP-FPM account are set to the same account. 
+However, for enhanced security, it is better to run them under separate accounts. 
+
+**Here are two reasons:**
+
+1. Isolation of Processes:
+   - Running the web server and PHP-FPM under separate accounts isolates the processes. 
+   - This reduces the risk that a compromise in one service will affect the other. 
+   - If an attacker gains access to the web server process, they won't necessarily have access to PHP-FPM, and vice versa.
+
+2. Least Privilege Principle:
+   - By using dedicated, non-privileged accounts for each service, you adhere to the principle of least privilege. 
+   - This limits the permissions and access each service has, minimizing potential damage from security vulnerabilities or breaches.
+
+**Audit:**
+- Verify the account running the PHP-FPM process.
+```
+# ps -ef | grep php-fpm
+root     1234     1  0 12:00 ?       00:00:01 php-fpm: master process (/etc/php-fpm.conf)
+php-fpm 5678  1234  0 12:00 ?        00:00:00 php-fpm: pool www
+php-fpm 5679  1234  0 12:00 ?        00:00:00 php-fpm: pool www
+php-fpm 5680  1234  0 12:00 ?        00:00:00 php-fpm: pool www
+php-fpm 5681  1234  0 12:00 ?        00:00:00 php-fpm: pool www
+```
+
+**Remediation:**
+- PHP-FPM should run as a non-privileged, dedicated account.
+- In most cases, the account used is "php-fpm".
+
+**Changing process account for PHP-FPM:**
+```
+# vim /etc/php-fpm.d/www.conf # Adjust the path based on your PHP version
+...
+user = php-fpm
+group = php-fpm
+listen.owner = php-fpm 
+listen.group = php-fpm 
+```
+
+PHP-FPM process account should not have shell login privileges.
+```
+# cat /etc/passwd | grep php-fpm
+php-fpm:x:999:999:PHP-FPM:/run/php:/usr/sbin/nologin
+```
+
+**Note:**
+- Using different user accounts for the PHP-FPM processes and the web server processes is preferable from a security perspective. 
+- When asked which is better for security, they should be different. Avoid using the same execution account in this context.
+
+
+### 8.7. Ensure Secure Configuration of the WordPress Home Directory
+
+To operate a web server securely, it is crucial to properly configure the ownership and permissions of the WordPress home directory
+
+In most cases, the ownership and permissions of the WordPress files and directories are set to match the web server's process account. 
+This configuration allows the web server to access files in the webroot and operate without errors.
+
+However, this configuration is insecure.
+
+For example, if the web server process is 'apache' and both the webroot directory and files are owned by 'apache', it could lead to severe vulnerabilities. 
+Attackers could exploit these vulnerabilities to gain unauthorized access to critical files and directories within the WordPress home directory.
+
+**Common Vulnerability Example:**
+- If both the web server process account and the Home directory(webroot) and files are owned by 'apache':
+- In case of vulnerabilities in the website and external access to the system (like webshell), attackers can perform various actions within the webroot:
+  1. Create, modify, or delete files or directories within the webroot.
+  2. Manipulate web access logs, including modification, deletion, or creation. (except in some environments)
+  3. It can be Gain access to active session cookies of logged-in users. (in particularly vulnerable environments)
+
+To mitigate these risks, it is crucial to adjust the ownership and permissions of the WordPress home directory properly
+
+**Remediation:**
+- Set the owner of the Home directory(webroot) and files to 'root:root'. (Avoid setting it the same as the web server process account)
+- The default UMASK for directories and files is 022. (Directories: 755, Files: 644)
+- For directories requiring write access like file upload by the web service, set the owner of those directories to the web server process account.
+
+**Generally Required Write Permissions Directories in WordPress:**
+```
+/wp-content/uploads
+/wp-content/cache
+/wp-content/wflogs (when using security plugins like Wordfence)
+/wp-content/upgrade (used during the WordPress upgrade process)
+```
+
+After configuring the ownership and permissions of the home directory according to the above remediation measures, 
+output of the WordPress home directory is as follows:
+
+**Example: WordPress Home Directory**
+```
+drwxr-xr-x  5 root     root     4096 May 27  2024 .
+drwxr-xr-x  3 root     root     4096 May 27  2024 ..
+-rw-r--r--  1 root     root      418 May 27  2024 index.php
+-rw-r--r--  1 root     root    19935 May 27  2024 license.txt
+-rw-r--r--  1 root     root     7346 May 27  2024 readme.html
+-rw-r--r--  1 root     root     7106 May 27  2024 wp-activate.php
+drwxr-xr-x  9 root     root     4096 May 27  2024 wp-admin
+-rw-r--r--  1 root     root      351 May 27  2024 wp-blog-header.php
+-rw-r--r--  1 root     root     2328 May 27  2024 wp-comments-post.php
+-rw-r--r--  1 root     root     4973 May 27  2024 wp-config-sample.php
+-rw-r--r--  1 root     root     2755 May 27  2024 wp-config.php
+drwxr-xr-x  8 root     root     4096 May 27  2024 wp-content
+-rw-r--r--  1 root     root     3940 May 27  2024 wp-cron.php
+drwxr-xr-x 25 root     root    12288 May 27  2024 wp-includes
+-rw-r--r--  1 root     root     2496 May 27  2024 wp-links-opml.php
+-rw-r--r--  1 root     root     3300 May 27  2024 wp-load.php
+-rw-r--r--  1 root     root    51556 May 27  2024 wp-login.php
+-rw-r--r--  1 root     root     8403 May 27  2024 wp-mail.php
+-rw-r--r--  1 root     root    24568 May 27  2024 wp-settings.php
+-rw-r--r--  1 root     root    30869 May 27  2024 wp-signup.php
+-rw-r--r--  1 root     root     4620 May 27  2024 wp-trackback.php
+-rw-r--r--  1 root     root     3065 May 27  2024 xmlrpc.php
+```
+
+**In case php-fpm and web server process accounts are different (Separate Permissions)**
+
+If the web server process account is "apache" and the php-fpm process account is "php-fpm".
+
+Change the permissions of the directories that require write access in WordPress (e.g., /wp-content/uploads).
+- Owner: php-fpm
+- Group: apache
+- Directory Permissions: 775 (755 if necessary)
+
+**File and Directory Structure**
+
+Set the write permissions for the necessary directories so that both "php-fpm" and "apache" accounts can write.
+```
+ex) /service/wordpress/www
+├── index.php             (root:root, 644)
+├── license.txt           (root:root, 644)
+├── readme.html           (root:root, 644)
+├── wp-activate.php       (root:root, 644)
+├── wp-admin/             (root:root, 755)
+├── wp-blog-header.php    (root:root, 644)
+├── wp-comments-post.php  (root:root, 644)
+├── wp-config-sample.php  (root:root, 644)
+├── wp-config.php         (root:root, 644)
+├── wp-content/           (root:root, 755)
+│   ├── plugins/          (root:root, 755)
+│   ├── themes/           (root:root, 755)
+│   ├── uploads/          (php-fpm:apache, 775)
+│   │   ├── 2024/         (php-fpm:apache, 775)
+│   │   └── ...           (php-fpm:apache, 775)
+│   └── ...               (root:root, 755)
+├── wp-cron.php           (root:root, 644)
+├── wp-includes/          (root:root, 755)
+├── wp-links-opml.php     (root:root, 644)
+├── wp-load.php           (root:root, 644)
+├── wp-login.php          (root:root, 644)
+├── wp-mail.php           (root:root, 644)
+├── wp-settings.php       (root:root, 644)
+├── wp-signup.php         (root:root, 644)
+├── wp-trackback.php      (root:root, 644)
+└── xmlrpc.php            (root:root, 644)
+```
+
+**Summary**
+1. Web Server worker process account: "www-data" or "apache" or "nginx"
+2. PHP-FPM process account: "php-fpm"
+3. WordPress Directory Settings:
+   - Home Directory: 
+     - Owned by root:root
+     - Directory Permissions 755
+     - File Permissions 644
+   - Write-required Directories
+     - Owned by "php-fpm:www-data"
+     - Directory Permissions 775 (or 755 if necessary)
+
+By setting it this way, you can separate the permissions of the web server and PHP-FPM, correctly apply the ownership and permission settings of the home directory, and enhance security. 
+
+This method applies not only to WordPress but also to any web server structure that serves web content.
