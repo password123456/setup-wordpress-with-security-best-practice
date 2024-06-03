@@ -1625,8 +1625,9 @@ In most cases, web services are accessed via a domain name, such as `https://you
     ```
 
 3. Testing
-   - Below is the creation of the Default VirtualHost and Domain-Based VirtualHost for `yourwordpress.com`. 
-   - Access is denied (403 error) for requests that are not domain-based.
+   - Here is the creation of the Default VirtualHost and Domain-Based VirtualHost for `yourwordpress.com`. 
+   - After creating the Default VirtualHost and Domain-Based VirtualHost for `yourwordpress.com`, access is denied (403 error) for requests that are not domain-based (https://ip), resulting in a 403 error screen.
+  
 
     ```
      $ curl -i -k https://123.456.789.000
