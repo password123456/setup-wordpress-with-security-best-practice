@@ -29,6 +29,8 @@ It does not encompass all the content necessary for securing WordPress. However,
   * [8.5. Ensure the Web Server Runs As a Non-Root User - Unique, Unprivileged User and Group for the Server Application](#85-ensure-the-web-server-runs-as-a-non-root-user---unique-unprivileged-user-and-group-for-the-server-application)
   * [8.6. Ensure PHP-FPM Runs As a Non-Root User - Unique, Unprivileged User and Group for the Server Application](#86-ensure-php-fpm-runs-as-a-non-root-user---unique-unprivileged-user-and-group-for-the-server-application)
   * [8.7. Ensure Secure Configuration of the WordPress Home Directory](#87-ensure-secure-configuration-of-the-wordpress-home-directory)
+  * [8.8. Ensure PHP Execution is Disabled in Writable Directories](#88-ensure-php-execution-is-disabled-in-writable-directories)
+  * [8.9. Ensure Web Server Only Responds to Domain-Based Host Headers](#89-ensure-web-server-only-responds-to-domain-based-host-headers)
 
 ...
 
@@ -1427,3 +1429,199 @@ ex) /service/wordpress/www
 By setting it this way, you can separate the permissions of the web server and PHP-FPM, correctly apply the ownership and permission settings of the home directory, and enhance security. 
 
 This method applies not only to WordPress but also to any web server structure that serves web content.
+
+
+### 8.8. Ensure PHP Execution is Disabled in Writable Directories
+Ensuring that PHP execution is disabled in directories where files can be uploaded is crucial for maintaining a secure environment. 
+
+Upload directories with write permissions are potential targets for attackers to upload malicious scripts, such as web shells, 
+which can be executed to compromise the server.
+
+Why is this Important?
+1. Mitigate Web Shell Attacks: 
+   - By preventing the execution of PHP scripts in upload directories, you mitigate the risk of web shell attacks that can lead to full server compromise.
+
+2. Reduce Attack Surface: 
+   - Disabling PHP execution in directories where files can be written reduces the attack surface, making it harder for attackers to exploit vulnerabilities.
+
+3. Compliance with Security Best Practices:
+   - Ensuring proper permissions and execution settings aligns with security best practices, providing an additional layer of defense.
+
+**Audit:**
+- Verify that writable directories (e.g., upload directories) are configured to prevent PHP script execution.
+
+**Remediation:**
+- Configure your web server (Apache or Nginx) to disable PHP execution in directories with write permissions, such as the `/wp-content/uploads` directory.
+
+**Configuration Steps**
+1. Set Files to Download in Upload Directories
+   - **For Apache:**
+        ```
+        <Location "/wp-content/uploads">
+            SetHandler application/octet-stream
+        </Location>
+        ```
+   - **For Nginx:**
+        ```
+        location /wp-content/uploads {
+            default_type application/octet-stream;
+        }
+        ```
+2. Disable PHP Execution in Upload Directories
+   - **For Apache:**
+       ```
+       <Location "/wp-content/uploads">
+           php_flag engine off
+           # or alternatively
+           php_value engine 0
+       </Location>
+    
+        <Location "/wp-content/uploads">
+            <FilesMatch "\.php$">
+                SetHandler none
+                Require all denied
+            </FilesMatch>
+        </Location>
+        
+        <Directory "/var/www/html/yourwordpress/wp-content/uploads">
+            # Disable PHP execution
+            <FilesMatch "\.php$">
+                SetHandler none
+                Require all denied
+            </FilesMatch>
+        </Directory>
+        ```   
+   - **For Nginx:**
+       ```
+       location /wp-content/uploads {
+           location ~ \.php$ {
+               fastcgi_pass off;
+           }
+       }
+    
+        location /wp-content/uploads {
+            location ~ \.php$ {
+                deny all;
+            }
+        }
+       ```
+     
+These configurations ensure that even if a PHP file is uploaded to the /wp-content/uploads directory, it cannot be executed, thereby preventing potential attacks.
+
+**Explanation of Configuration Directives**
+1. SetHandler application/octet-stream:
+   - Forces files to be treated as binary streams, prompting downloads instead of execution.
+
+2. php_flag engine off / php_value engine 0:
+   - Disables PHP engine for the specified directory, preventing PHP scripts from being executed.
+
+3. SetHandler none:
+   - Unsets the handler for matching files, ensuring they are not processed as PHP.
+
+**Note:**
+- The above settings do not affect the display of image files. 
+- For example, an image file in the `/wp-content/uploads` directory will still be accessible and display correctly using an <img> tag:
+```
+<img src="/wp-content/uploads/image.jpg" alt="Example Image">
+```
+
+By applying these configurations, you significantly enhance the upload directory from potential script execution vulnerabilities.
+
+
+### 8.9. Ensure Web Server Only Responds to Domain-Based Host Headers
+To secure your web server, it's essential to ensure it only responds to requests directed at your domain name and not to requests made directly to the server's IP address. 
+
+This can be achieved through proper configuration of VirtualHost directives.
+
+In most cases, web services are accessed via a domain name, such as `https://yourwordpress.com`. The web server receives this request and serves the appropriate content. To enforce this behavior, we need to configure the web server to respond only to requests with the correct Host header.
+
+**Potential Security Risks of Allowing IP-Based Access**
+1. Service Enumeration:
+   - Attackers can use IP addresses to enumerate services running on the server, increasing the risk of discovering and exploiting vulnerabilities.
+2. Exposure of Sensitive Information:
+   - Misconfigured servers might expose directories, files, or other sensitive information when accessed via IP, which should not be publicly accessible.
+3. Bypassing Security Controls:
+   - IP-based access might bypass security measures that are only enforced for domain-based access, potentially leading to unauthorized access.
+
+**Audit:**
+- Verify that the web server is configured to respond only to domain-based requests and not to direct IP address access.
+
+**Remediation:**
+- Configure web server to handle requests based only on the specified domain and to deny or redirect other requests appropriately.
+
+**Configuration Steps**
+1. Default VirtualHost Configuration
+   - Create a default VirtualHost that catches all unspecified requests and returns a 403 Forbidden or redirects them.
+
+       **For Apache:**
+       ```
+        <VirtualHost _default_:80>
+            DocumentRoot /var/www/html/yourwordpress
+            ...
+            <Location />
+                Require all denied
+            </Location>
+    
+        <VirtualHost _default_:443>
+            DocumentRoot /var/www/html/yourwordpress
+            ...
+            SSLEngine on
+            SSLCertificateFile /path/to/ssl/certificate.crt;
+            SSLCertificateKeyFile /path/to/ssl/private.key;
+            ...
+            <Location />
+                Require all denied
+            </Location>
+        </VirtualHost>     
+       ```
+       **For Nginx:**
+       ```
+       server {
+           listen 80 default_server;
+           return 403;
+       }
+    
+       server {
+           listen 443 ssl default_server;
+           ...
+           ssl_certificate /path/to/ssl/certificate.crt;
+           ssl_certificate_key /path/to/ssl/private.key;
+           ...
+           return 403;
+       }
+       ```
+
+2. Domain-Based VirtualHost Configuration
+   - Ensure you have a VirtualHost configured for your domain.
+   
+    **For Apache:**
+    ```
+    <VirtualHost *:80>
+        ServerName yourwordpress.com
+        ...
+        Redirect permanent / https://yourwordpress.com/
+    </VirtualHost> 
+   
+    <VirtualHost *:443>
+        ServerName yourwordpress.com
+        DocumentRoot /var/www/html/yourwordpress
+        ...
+        SSLEngine on
+        SSLCertificateFile /etc/httpd/to/ssl/certificate.crt;
+        SSLCertificateKeyFile /etc/httpd/to/ssl/private.key;
+        ...
+    </VirtualHost>    
+    ```
+    **For Nginx:**
+    ```
+    server {
+        listen       443 ssl;
+        server_name  yourwordpress.com;
+        root         /var/www/html/wordpress;
+        ...
+        ssl_certificate /path/to/ssl/certificate.crt;
+        ssl_certificate_key /path/to/ssl/private.key;
+        ... 
+    ```
+
+By implementing these configurations, the web server responds only to requests directed at your domain.
