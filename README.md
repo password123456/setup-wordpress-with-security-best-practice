@@ -1,12 +1,14 @@
 # Setup WordPress With Security Best Practice
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fpassword123456%2Fsetup-wordpress-with-security-best-practice&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
-This document is written with the purpose of being suitable for web applications developed using WordPress, where there is no interaction with users. 
-Typically, it applies to corporate brand pages, various static views, recruitment pages, and the like.
+This document is written with the aim of being suitable for web applications developed using WordPress that do not interact with users. It is primarily intended for corporate brand pages, various static views, recruitment pages, and similar sites.
 
-For websites where users register (sign up) and freely use the site, such as open communities, some items in this document may not be applicable. Please keep this in mind as you read.
+For websites where users register and freely use the site, such as open communities, some items in this document may not be applicable. Please keep this in mind as you read.
 
-It does not encompass all the content necessary for securing WordPress. However, it is written to a level where it includes general but detailed information, allowing for security risk assessments and vulnerability responses based on the guide.
+This document does not include `all of the content necessary for securing WordPress`.
+
+However, it includes general and detailed information to a level that allows for security risk assessments and vulnerability responses based on the guide. 
+
 ***
 
 ## Table of Contents
@@ -31,10 +33,9 @@ It does not encompass all the content necessary for securing WordPress. However,
   * [8.7. Ensure Secure Configuration of the WordPress Home Directory](#87-ensure-secure-configuration-of-the-wordpress-home-directory)
   * [8.8. Ensure PHP Execution is Disabled in Writable Directories](#88-ensure-php-execution-is-disabled-in-writable-directories)
   * [8.9. Ensure Web Server Only Responds to Domain-Based Host Headers](#89-ensure-web-server-only-responds-to-domain-based-host-headers)
-
-...
-
-==== In Progress as of June 03, 2024. will be done June, 7 ====
+  * [8.10. Completed WebServer Configuration](#810-completed-webserver-configuration)
+- [9. Ensure WordPress Security Updates](#9-ensure-wordpress-security-updates)
+- [10. Ensure Regular Security Vulnerability Checks for WordPress](#10-ensure-regular-security-vulnerability-checks-for-wordpress)
 
 ***
 
@@ -393,7 +394,7 @@ If the REST API is needed, it's recommended to use the JSON REST API instead.
 XML-RPC has two main weaknesses:
 
 Brute force attacks:
-- Attackers try to login to WordPress using xmlrpc.php with as many username/password combinations as they can enter. 
+- Attackers try to WordPress login using xmlrpc.php with as many username/password combinations as they can enter. 
 - A method within xmlrpc.php allows the attacker to use a single command (system.multicall) to guess hundreds of passwords. 
 
 Denial of Service Attacks via Pingback:
@@ -1129,7 +1130,7 @@ Why is this Important?
         ```
 
 6. open_basedir:
-   - Restricts PHP's ability to access files outside of specified directories. 
+   - Restricts PHP's ability to access files within specified directories.
    - This can prevent attackers from accessing sensitive files on the server.
         ```
         ; Restrict PHP file access to the specified directory
@@ -1630,7 +1631,7 @@ In most cases, web services are accessed via a domain name, such as `https://you
   
 
     ```
-     $ curl -i -k http(s)://10.10.77.49
+     $ curl -i -k http(s)://10.10.66.88
        
      HTTP/1.1 403 Forbidden
      Server: nginx
@@ -1662,3 +1663,354 @@ In most cases, web services are accessed via a domain name, such as `https://you
    - If there is a need for inter-server communication or communication within the same IP subnet, you can configure the Default VirtualHost to allow access from specific IP addresses.
 
 By implementing these configurations, the web server responds only to requests directed at your domain.
+
+
+### 8.10. Completed WebServer Configuration
+Here is an example for a completed web server configuration that includes the security guidelines. Adjust and use this configuration according to your WordPress web server environment.
+
+1. Apache
+    ```
+    <VirtualHost _default_:80>
+        DocumentRoot /var/www/html/yourwordpress
+   
+        ErrorLog /var/log/httpd/http.ip.error.log
+        CustomLog /var/log/httpd/http.ip.access.log combined
+   
+        <Location />
+            Require all denied
+        </Location>
+
+    <VirtualHost _default_:443>
+        DocumentRoot /var/www/html/current/public
+   
+        ErrorLog /var/log/httpd/https.ip.error.log
+        CustomLog /var/log/httpd/https.ip.access.log combined
+   
+        # SSL Configuration
+        SSLEngine on
+        SSLCertificateFile /etc/httpd/conf.d/cert/yourwordpress.com_ssl.crt
+        SSLCertificateKeyFile /etc/httpd/conf.d/cert/yourwordpress.com_ssl.key
+        SSLSessionTimeout 1d
+        SSLSessionCache shared:MozSSL:10m
+        SSLSessionTickets off
+    
+        SSLProtocol TLSv1.2 TLSv1.3
+        SSLCipherSuite ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-CHACHA20-POLY1305
+        SSLHonorCipherOrder off
+   
+        <Location />
+            Require all denied
+        </Location>
+    </VirtualHost>    
+   
+    <VirtualHost *:80>
+        ServerName yourwordpress.com
+        Redirect permanent / https://yourwordpress.com/
+    </VirtualHost> 
+    
+    <VirtualHost *:443>
+        ServerName yourwordpress.com
+        Protocols h2 http/1.1
+        DocumentRoot /var/www/html/current/public
+   
+        ErrorLog /var/log/httpd/https.yourwordpress.com.error.log
+        CustomLog /var/log/httpd/https.yourwordpress.com.access.log combined
+    
+        # SSL Configuration
+        SSLEngine on
+        SSLCertificateFile /etc/httpd/conf.d/cert/yourwordpress.com_ssl.crt
+        SSLCertificateKeyFile /etc/httpd/conf.d/cert/yourwordpress.com_ssl.key
+        SSLSessionTimeout 1d
+        SSLSessionCache shared:MozSSL:10m
+        SSLSessionTickets off
+    
+        SSLProtocol TLSv1.2 TLSv1.3
+        SSLCipherSuite ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-CHACHA20-POLY1305
+        SSLHonorCipherOrder off
+    
+        <Directory /var/www/html/current/public>
+            Options -Indexes FollowSymLinks
+            AllowOverride All
+            Require all granted
+        </Directory>
+
+        # Deny PHP execution in uploads directory
+        <Directory "/var/www/html/current/public/wp-content/uploads">
+            <FilesMatch "\.php$">
+                SetHandler none
+                Require all denied
+            </FilesMatch>
+        </Directory>
+   
+        # PHP Serving 
+        ProxyPassMatch ^/(?!wp-content/uploads/.*\.php$)(.*\.php(/.*)?)$ unix:/var/run/php-fpm/php-fpm.sock|fcgi://localhost/var/www/html/current/public
+        #ProxyPassMatch ^/(?!wp-content/uploads/.*\.php$)(.*\.php(/.*)?)$ fcgi://127.0.0.1:9000/var/www/html/current/public
+    
+        # Favicon
+        <Location "/favicon.ico">
+            ErrorDocument 404 "Not Found"
+            SetEnvIf Request_URI "^/favicon\.ico$" no_log
+        </Location>
+    
+        # Robots.txt
+        <Location "/robots.txt">
+            Require all granted
+            SetEnvIf Request_URI "^/robots\.txt$" no_log
+        </Location>
+    
+        # Restrict access to wp-cron.php
+        <Files "wp-cron.php">
+            Require all denied
+            Require ip 127.0.0.1
+        </Files>
+    
+        # Restrict access to wp-json
+        <Location "/wp-json/">
+            Require all denied
+            Require ip 127.0.0.1 
+            Require ip 10.10.77.49
+            Require ip 10.10.71.20
+        </Location>
+    
+        # Restrict access to wp-admin
+        <Location "/wp-admin">
+            Require all denied
+            Require ip 10.10.77.49
+            Require ip 10.10.71.20
+        </Location>
+    
+        <Files "wp-login.php">
+            Require all denied
+            Require ip 10.10.77.49
+            Require ip 10.10.71.20
+        </Files>
+    
+        # Deny access to hidden files
+        <FilesMatch "^\.">
+            Require all denied
+        </FilesMatch>
+    </VirtualHost>
+    ```
+2. Nginx
+    ```
+    server {
+        listen       80 default_server;
+        listen       443 default_server ssl http2;
+    
+        error_log    /var/log/nginx/http.ip.error.log;
+        access_log   /var/log/nginx/http.ip.access.log  main;
+    
+        ssl_certificate /etc/nginx/conf.d/cert/yourwordpress.com_ssl.crt;
+        ssl_certificate_key /etc/nginx/conf.d/cert/yourwordpress.com_ssl.key;
+        ssl_session_timeout 1d;
+        ssl_session_cache shared:MozSSL:10m;  # about 40000 sessions
+        ssl_session_tickets off;
+    
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-CHACHA20-POLY1305;
+        ssl_prefer_server_ciphers off;
+    
+        location / {
+             deny all;
+        }
+    }
+    
+    server {
+        listen       443 ssl http2;
+        server_name  yourwordpress.com;
+        root         /var/www/html/wordpress;
+    
+        error_log    /var/log/nginx/https.yourwordpress.com.error.log;
+        access_log   /var/log/nginx/https.yourwordpress.com.access.log  main;
+    
+        ssl_certificate /etc/nginx/conf.d/cert/yourwordpress.com_ssl.crt;
+        ssl_certificate_key /etc/nginx/conf.d/cert/yourwordpress.com_ssl.key;
+        ssl_session_timeout 1d;
+        ssl_session_cache shared:MozSSL:10m;  # about 40000 sessions
+        ssl_session_tickets off;
+    
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-CHACHA20-POLY1305;
+        ssl_prefer_server_ciphers off;
+    
+    
+        location = /favicon.ico {
+            log_not_found off;
+            access_log off;
+        }
+    
+        location = /robots.txt {
+            allow all;
+            log_not_found off;
+            access_log off;
+        }
+    
+        # Restrict to access Wordpress Cron
+        location = /wp-cron.php {
+            allow 127.0.0.1;
+            deny all;
+            access_log off;
+            log_not_found off;
+        }
+    
+       # Restrict to access json rest-api
+       location ~ ^/wp-json/ {
+            allow 127.0.0.1;    		# Allow localhost
+            allow 10.10.77.49;		    # Allow myip
+            allow ip 10.10.71.20;       # Allow myip
+            deny all;
+            access_log off;
+            log_not_found off;
+        }
+
+        # Restrict to access Wordpress Admin
+        location = /wp-admin {
+            allow 10.10.77.49;		    # Allow myip
+            allow ip 10.10.71.20;       # Allow myip
+            deny all;
+        }
+        
+        location ~* \wp-login.php {
+            allow 10.10.77.49;		    # Allow myip
+            allow ip 10.10.71.20;       # Allow myip
+            deny all;
+        }
+    
+        # Deny all attempts to access hidden files such as .htaccess, .htpasswd, .DS_Store (Mac).
+        # Keep logging the requests to parse later (or to pass to firewall utilities such as fail2ban)
+        location ~ /\. {
+            deny all;
+        }
+    
+        # Deny access to any files with a .php extension in the uploads directory
+        location /wp-content/uploads {  
+            location ~ \.php$ {
+                deny all;
+            }
+        }
+        # Other example
+        # location ~* /(?:uploads|files)/.*\.php$ {
+        # 		deny all;
+        # }
+    
+        # Rewrite rules, sends everything through index.php and keeps the appended query string intact
+        location / {
+            try_files $uri $uri/ /index.php$is_args$args;
+        }
+    
+        # Serving PHP
+        location ~ \.php$ {
+            try_files $uri =404;
+            fastcgi_split_path_info ^(.+\\.php)(/.+)$;
+            # fastcgi_pass   127.0.0.1:9000; 					 # With php-cgi (or other tcp sockets):
+            fastcgi_pass   unix:/var/run/php-fpm/php-fpm.sock;   # With php-fpm (or other unix sockets):
+            fastcgi_index index.php;
+            include /etc/nginx/fastcgi_params;
+            fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        }
+    
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+            expires max;
+            log_not_found off;
+        }
+    
+    }
+    ```
+
+
+## 9. Ensure WordPress Security Updates
+WordPress addresses security vulnerabilities by releasing new version updates when vulnerabilities are discovered. 
+
+For example, if a security vulnerability is found in WordPress 6.5.2, it will be addressed and distributed in version 6.5.3.
+
+Since security updates are not managed on a version-by-version basis, regular version updates are necessary to address security vulnerabilities.
+
+Refer to the official WordPress release information for updates:
+[WordPress Releases](https://wordpress.org/download/releases/)
+
+**Remediation:**
+- Regularly update WordPress.
+- WordPress does not manage updates (including security updates) on a version-by-version basis.
+- As of May 20, 2024, only version 6.5 is under maintenance.
+
+**Note:**
+- Beta, Nightly builds, and other Subversion checkouts are not supported.
+- Avoid using forked products or versions that are not official WordPress releases.
+- Documentation for supported versions: [Supported Versions](https://wordpress.org/documentation/article/supported-versions/) 
+
+
+## 10. Ensure Regular Security Vulnerability Checks for WordPress
+
+WordPress is a content management system (CMS) software. 
+Since it is packaged software, security vulnerabilities mainly occur in its components (core files, plugins, themes, etc.).
+
+Unlike custom-developed web applications tailored to specific requirements, identifying and addressing security vulnerabilities must be done using methods suited to WordPress.
+
+If a website built with WordPress has not been customized extensively and retains the nature of WordPress, security vulnerabilities can be easily checked using WPScan.
+
+WPScan is partially paid software, but the basic free tier has no functional limitations. It allows regular checks and responses to WordPress security vulnerabilities.
+
+**Remediation:**
+- Perform regular vulnerability checks using WPScan (or similar tools that can scan WordPress).
+- If vulnerabilities are found, verify and perform the necessary actions to eliminate them. In most cases, this is resolved through updates.
+- Refer to the [WPScan user documentation](https://github.com/wpscanteam/wpscan/wiki/WPScan-User-Documentation).
+- More information about common vulnerabilities often found in WordPress: [Extending WordPress Common Security Vulnerabilities](https://learn.wordpress.org/tutorial/extending-wordpress-common-security-vulnerabilities/)
+
+**WPScan:**
+```
+_______________________________________________________________
+         __          _______   _____
+         \ \        / /  __ \ / ____|
+          \ \  /\  / /| |__) | (___   ___  __ _ _ __ ®
+           \ \/  \/ / |  ___/ \___ \ / __|/ _` | '_ \
+            \  /\  /  | |     ____) | (__| (_| | | | |
+             \/  \/   |_|    |_____/ \___|\__,_|_| |_|
+
+         WordPress Security Scanner by the WPScan Team
+                         Version 3.8.22
+       Sponsored by Automattic - https://automattic.com/
+       @_WPScan_, @ethicalhack3r, @erwan_lr, @firefart
+_______________________________________________________________
+
+[+] URL: https://yourwordpress.com/ [192.168.10.100]
+[+] Started: Fri May 24 14:39:06 2024
+
+Interesting Finding(s):
+
+[+] Headers
+..
+...
+ |  - content-security-policy: upgrade-insecure-requests
+ | Found By: Headers (Passive Detection)
+ | Confidence: 100%
+
+..
+...
+[+] XML-RPC seems to be enabled: https://yourwordpress.com/xmlrpc.php
+ | Found By: Link Tag (Passive Detection)
+ | Confidence: 30%
+ | References:
+ |  - http://codex.wordpress.org/XML-RPC_Pingback_API
+ |  - https://www.rapid7.com/db/modules/auxiliary/scanner/http/wordpress_ghost_scanner/
+ |  - https://www.rapid7.com/db/modules/auxiliary/dos/http/wordpress_xmlrpc_dos/
+ |  - https://www.rapid7.com/db/modules/auxiliary/scanner/http/wordpress_xmlrpc_login/
+ |  - https://www.rapid7.com/db/modules/auxiliary/scanner/http/wordpress_pingback_access/
+
+..
+...
+
+[+] Finished: Fri May 24 14:39:48 2024
+[+] Requests Done: 187
+[+] Cached Requests: 7
+[+] Data Sent: 56.32 KB
+[+] Data Received: 605.595 KB
+[+] Memory used: 276.602 MB
+[+] Elapsed time: 00:00:42
+```
+
+# And...
+- If you find this helpful, please the **"star"**:star2: to support further improvements.
+
+---
+### Read Next
+- [Setup Squid Proxy With Security Best Practice](https://github.com/password123456/setup-squid-proxy-with-security-best-practice)
