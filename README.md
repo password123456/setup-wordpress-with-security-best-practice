@@ -1630,8 +1630,7 @@ In most cases, web services are accessed via a domain name, such as `https://you
   
 
     ```
-     $ curl -i -k https://123.456.789.000
-     $ curl -i -k http://123.456.789.000
+     $ curl -i -k http(s)://10.10.77.49
        
      HTTP/1.1 403 Forbidden
      Server: nginx
