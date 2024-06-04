@@ -298,7 +298,7 @@ Ensure that ip access restriction is applied to prevent unauthorized access to t
     ```
    # Files Directive 
     <Files "wp-login.php">
-        Require ip 123.456.789.000  # Replace with your IP address
+        Require ip 10.10.77.49  # Replace with your IP address
     </Files>
     
     # FilesMatch Directive
@@ -311,28 +311,28 @@ Ensure that ip access restriction is applied to prevent unauthorized access to t
         Require all granted
         AllowOverride None
         <Files "wp-login.php">
-            Require ip 123.456.789.000  # Replace with your IP address
+            Require ip 10.10.77.49  # Replace with your IP address
         </Files>
     </Directory>
    
    # Location Directive
     <Location "/wp-admin">
-        Require ip 123.456.789.000  # Replace with your IP address
+        Require ip 10.10.77.49  # Replace with your IP address
     </Location>
     
     <Location "/wp-login.php">
-        Require ip 123.456.789.000  # Replace with your IP address
+        Require ip 10.10.77.49  # Replace with your IP address
     </Location>
     ```
 2. For Nginx:
     ```
     location /wp-admin {
-        allow 123.456.789.000;  # Replace with your IP address
+        allow 10.10.77.49;  # Replace with your IP address
         deny all;
     }
     
     location ~* \wp-login.php {
-        allow 123.456.789.000;  # Replace with your IP address
+        allow 10.10.77.49;  # Replace with your IP address
         deny all;
     }
     ```
@@ -374,13 +374,13 @@ Server: Apache
 1. For Apache:
     ```
     <Location "/wp-json">
-        Require ip 123.456.789.000  # Replace with your IP address
+        Require ip 10.10.77.49  # Replace with your IP address
     </Location>
     ```
 2. For Nginx:
     ```
    location ~ ^/wp-json/ {
-        allow 123.456.789.000;   # Replace with your allowed IP address
+        allow 10.10.77.49;   # Replace with your allowed IP address
         deny all;
     }
     ```
@@ -1857,7 +1857,7 @@ Here is an example for a completed web server configuration that includes the se
        location ~ ^/wp-json/ {
             allow 127.0.0.1;    		# Allow localhost
             allow 10.10.77.49;		    # Allow myip
-            allow ip 10.10.71.20;       # Allow myip
+            allow 10.10.71.20;       # Allow myip
             deny all;
             access_log off;
             log_not_found off;
@@ -1866,13 +1866,13 @@ Here is an example for a completed web server configuration that includes the se
         # Restrict to access Wordpress Admin
         location = /wp-admin {
             allow 10.10.77.49;		    # Allow myip
-            allow ip 10.10.71.20;       # Allow myip
+            allow 10.10.71.20;       # Allow myip
             deny all;
         }
         
         location ~* \wp-login.php {
             allow 10.10.77.49;		    # Allow myip
-            allow ip 10.10.71.20;       # Allow myip
+            allow 10.10.71.20;       # Allow myip
             deny all;
         }
     
