@@ -9,6 +9,7 @@ This document does not include `all of the content necessary for securing WordPr
 
 However, it includes general and detailed information to a level that allows for security risk assessments and vulnerability responses based on the guide. 
 
+If you find this helpful, please the **"star"**:star2: to support further improvements.
 ***
 
 ## Table of Contents
@@ -36,7 +37,7 @@ However, it includes general and detailed information to a level that allows for
   * [8.10. Completed WebServer Configuration](#810-completed-webserver-configuration)
 - [9. Ensure WordPress Security Updates](#9-ensure-wordpress-security-updates)
 - [10. Ensure Regular Security Vulnerability Checks for WordPress](#10-ensure-regular-security-vulnerability-checks-for-wordpress)
-
+  
 ***
 
 ## 1. Ensure that the Default WordPress Admin Username has been Changed
@@ -2007,9 +2008,6 @@ Interesting Finding(s):
 [+] Memory used: 276.602 MB
 [+] Elapsed time: 00:00:42
 ```
-
-# And...
-- If you find this helpful, please the **"star"**:star2: to support further improvements.
 
 ---
 ### Read Next
